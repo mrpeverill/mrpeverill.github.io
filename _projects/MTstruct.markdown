@@ -14,7 +14,7 @@ Feel free to <a href="{{ site.url}}/assets/pdf/FLUX2019/Poster2.pdf">download a 
 <a href="{{ site.url}}/assets/pdf/FLUX2019/Poster2.pdf"><img src="{{site.url}}/assets/img/FLUX2019posterthumbnail.png" alt="Thumbnail with link to poster"></a>
 
 <h3>More information about the project.</h3>
-This poster was based on a talk given at SRCD in 2019. You can get more information about the project in these annotated slides. Paper forthcoming!
+This poster was based on a talk given at SRCD in 2019. You can get more information about the project in <a href="{{ site.url}}/assets/pdf/FLUX2019/Flux2019PosterSlides.pdf">these annotated slides</a>. Paper forthcoming!
 
 <object width="100%" height="1000" data="{{ site.url}}/assets/pdf/FLUX2019/Flux2019PosterSlides.pdf" type="application/pdf">
   alt : <a href="{{ site.url}}/assets/pdf/FLUX2019/Flux2019PosterSlides.pdf">Download the slides here.</a>
