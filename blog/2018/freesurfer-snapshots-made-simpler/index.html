@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Matthew Peverill | Freesurfer snapshots made simpler</title>
+  <meta name="description" content="A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+">
+
+  <link rel="shortcut icon" href="/assets/img/favicon.ico">
+
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="canonical" href="/blog/2018/freesurfer-snapshots-made-simpler/">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    
+    <span class="site-title">
+        
+        <strong>Matthew</strong> Peverill
+    </span>
+    
+
+    <nav class="site-nav">
+      <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+      <div class="trigger">
+        <!-- About -->
+        <a class="page-link" href="/">about</a>
+
+        <!-- Blog -->
+        <a class="page-link" href="/blog/">blog</a>
+
+        <!-- Pages -->
+        
+          
+            <a class="page-link" href="/CV/">CV</a>
+          
+        
+          
+        
+          
+            <a class="page-link" href="/projects/">projects</a>
+          
+        
+          
+            <a class="page-link" href="/publications/">publications</a>
+          
+        
+          
+        
+
+        <!-- CV link -->
+        <!-- <a class="page-link" href="/assets/pdf/CV.pdf">vitae</a> -->
+
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Freesurfer snapshots made simpler</h1>
+    <p class="post-meta">May 1, 2018</p>
+  </header>
+
+  <article class="post-content">
+    <h1>Introduction</h1>
+<p>There a lot of reasons why you would want to programatically collect screenshots from Freesurfer tools. For one, it’s a lot simpler to generate QA reports of your parcellations than to go through and manually inspect each brain volume one more time.</p>
+
+<p>Second, Freesurfer is a great tool for generating figures. You can use tksurfer to project statistical maps from FSL or other programs on a 3d image of the brain surface. Add in some imagemagick scripting and you can very easily create some nifty figures:</p>
+
+<p><a href="/assets/img/2018/04/examplequadfig.png"><img class="alignnone size-full wp-image-21" src="/assets/img/2018/04/examplequadfig.png" alt="" width="240" height="206" /></a></p>
+
+<p>(image from: Peverill, M., McLaughlin, K. A., Finn, A. S., &amp; Sheridan, M. A. (2016). Working memory filtering continues to develop into late adolescence. <i>Developmental Cognitive Neuroscience</i>. https://doi.org/10.1016/j.dcn.2016.02.004)</p>
+
+<p>That being said, complications are always the rule in computer land. Freesurfer is written using <a href="https://en.wikipedia.org/wiki/Tcl">Tcl/Tk</a>, which is a powerful but quircky programming language used to create gui applications. Partly because of this limitation, the way snapshots are taken is that a command is run in the tcl script ‘SaveTiff’ which saves a TIFF image of whatever is displayed in the users window. If your window is front and center, great. BUT if your screensaver comes on, if part of the window is obscured, or if your screen isn’t big enough, your snapshot will be corrupted. This also means that the process can’t be parallelized (for example, you need to generate QA reports one at a time) because otherwise the windows will interfere with one another. This also means you can’t wrap up QA generation in your normal workflow.</p>
+
+<p>Note: These days tkmedit and tksurfer are somewhat deprecated in favor of freeview, a more sophisticated program that has its own snapshotting interface. I’m using the former tools because the QA-tools script uses them, but xvfb should also work with freeview.</p>
+<h1>What is Xvfb</h1>
+<p>That said, this is Linux, which means that someone has likely already solved this problem. Graphics in unix usually run through x windows. When you run say, firefox, from the command line the application looks in your environment to see what the default ‘x server’ is set to. Then it will display the window on that server (your screen). This is why firefox fails if you run it in a normal ssh window. If you ran ssh from a mac with the -X option, it will know to try to open the window on your local x server, and the app opens on your desktop.</p>
+
+<p><a href="https://www.x.org/archive/X11R7.6/doc/man/man1/Xvfb.1.xhtml">Xvfb</a> is a virtual x server intended for testing graphical applications. So if we need to take some Freesurfer snapshots, instead of dealing with the idiosyncrocies of our local display, we can just just start an isolated dedicated x server for that subject’s Freesurfer, open the window there (it won’t actually show up anywhere), take our screenshot, and close it when we are done.</p>
+<h1>Minimal Example</h1>
+<p>Here’s a minimal example. We’re going to use xvfb-run to open up tksurfer and take a screenshot. In production, you would want to test out the tcl commands first in your normal environment to make sure you were taking the picture you want, but this will just show you how it works. You will need Xvfb installed on your server, and you will need to have freesurfer set up.</p>
+
+<figure class="highlight"><pre><code class="language-plaintext" data-lang="plaintext">mrpev@vmpfc$xvfb-run --server-args "-screen 0 1920x1080x24" tksurfer fsaverage lh pial -gray -mni152reg #everything after this is in tcl
+subject is fsaverage
+hemi is lh
+surface is pial
+surfer: current subjects dir: /mnt/stressdevlab/fear_pipeline/edited_FreeSurfer
+surfer: not in "scripts" dir ==&amp;gt; using cwd for session root
+surfer: session root data dir ($session) set to:
+surfer: /mnt/stressdevlab/fear_pipeline/edited_FreeSurfer
+checking for nofix files in 'pial'
+Reading image info (/mnt/stressdevlab/fear_pipeline/edited_FreeSurfer/fsaverage)
+Reading /mnt/stressdevlab/fear_pipeline/edited_FreeSurfer/fsaverage/mri/orig.mgz
+surfer: Reading header info from /mnt/stressdevlab/fear_pipeline/edited_FreeSurfer/fsaverage/mri/orig.mgz
+surfer: vertices=163842, faces=327680
+surfer: curvature read: min=-0.673989 max=0.540227
+surfer: single buffered window
+surfer: tkoInitWindow(fsaverage)
+surfer: using interface /usr/local/freesurfer/stable5_3/tktools/tksurfer.tcl
+Reading /usr/local/freesurfer/stable5_3/tktools/tkm_common.tcl
+Reading /usr/local/freesurfer/stable5_3/tktools/tkm_wrappers.tcl
+Reading /usr/local/freesurfer/stable5_3/lib/tcl/fsgdfPlot.tcl
+Reading /usr/local/freesurfer/stable5_3/tktools/tkUtils.tcl
+Successfully parsed tksurfer.tcl
+reading white matter vertex locations...
+% make_lateral_view #these are entered manually.
+% redraw
+% save_tiff example.tiff
+% exit
+mrpev@vmpfc:/mnt/stressdevlab/fear_pipeline/edited_FreeSurfer$eog example.tiff #this just opens the image for viewing.</code></pre></figure>
+
+<p>If everything goes well, you shouldn’t see any windows running but you should still get a screenshot at the end.  If you don’t want to enter the tcl commands manually (and why would you?) you can put them in a tcl script and specify the script when you run tksurfer using the -tcl option.</p>
+
+<p><a href="/assets/img/2018/04/capture.png"><img class="alignnone size-medium wp-image-23" src="/assets/img/2018/04/capture.png?w=300" alt="" width="300" height="274" /></a></p>
+<h1>Parallel generation of QA reports using Freesurfer qa-tools and Xvfb</h1>
+<p>Freesurfer publishes a powerful library, QAtools, to generate QA reports. But this involves, you guessed it, lots of snapshots. So it takes forever if you have a big dataset. We can use xvfb to address this. This is the code that needs to be run for each subject:</p>
+<pre>[sourcecode language="bash"]
+export SUBJECTS_DIR=(FREESURFER SUBJECT DIRECTORY)
+export QA_TOOLS=(PATH TO QAtools)
+xvfb-run -a --server-args "-screen 0 1920x1080x24" -e /dev/stderr $QA_TOOLS/recon_checker -s (SUBJECTID) -snaps-only -snaps-detailed -snaps-overwrite -snaps-out $SUBJECTS_DIR/QA/QA_check(SUBJECTID).html</pre>
+<p>A few notes on this:</p>
+<ul>
+	<li>The -a option to xvfb-run makes sure that each process doesn't try and run on the same x display.</li>
+	<li>recon_checker will fail if you don't specify a separate html file per subject (because parallel processes will try to write to the same file).</li>
+</ul>
+<p>Then you run the script using qsub:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">qsub <span class="nt">-cwd</span> <span class="nt">-V</span> <span class="nt">-S</span> /bin/bash runqa.sh&lt;/pre&gt;</code></pre></figure>
+
+<p>(there are a variety of ways to execute this smoothly across many subjects, including gnu make, a simple script executing a for loop with string substitution, etc. That’s a subject for another post)</p>
+
+<p>When you are done, you should have finished QA reports for each subject. The only downside is that, because the index page is generated by the qa_tools program, you’ll need to regenerate it. You can do this with a for loop like so:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="k">for </span>i <span class="k">in </span>QA_check1???_1.html<span class="p">;</span> <span class="k">do </span><span class="nb">sed</span> <span class="s1">'3q;d'</span> <span class="nv">$i</span><span class="p">;</span> <span class="k">done</span> &amp;gt<span class="p">;</span> qareport.html</code></pre></figure>
+
+  </article>
+
+  
+
+</div>
+
+      </div>
+    </div>
+
+    <footer>
+
+  <div class="wrapper">
+    &copy; Copyright 2021 Matthew Peverill.
+    Powered by <a href="http://jekyllrb.com/" target="_blank">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>. Photos from <a href="https://unsplash.com" target="_blank">Unsplash</a>.
+
+    
+  </div>
+
+</footer>
+
+
+    <!-- Load jQuery -->
+<script src="//code.jquery.com/jquery-1.12.4.min.js"></script>
+
+<!-- Load Common JS -->
+<script src="/assets/js/common.js"></script>
+
+
+<!-- Load KaTeX -->
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.js"></script>
+<script src="/assets/js/katex.js"></script>
+
+
+
+
+<!-- Include custom icon fonts -->
+<link rel="stylesheet" href="/assets/css/fontawesome-all.min.css">
+<link rel="stylesheet" href="/assets/css/academicons.min.css">
+
+<!-- Google Analytics -->
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-146388389-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+  </body>
+
+</html>
