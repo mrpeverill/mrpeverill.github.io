@@ -2,6 +2,7 @@
 # Site settings
 # -----------------------------------------------------------------------------
 
+title: blank # This makes it use my name
 first_name: Matthew
 middle_name:
 last_name: Peverill
@@ -57,7 +58,7 @@ github_username: mrpeverill # your GitHub user name
 gitlab_username: # your GitLab user name
 twitter_username: MatthewPeverill # your Twitter handle
 linkedin_username: # your LinkedIn user name
-scholar_userid: mrpeverill@gmail.com # your Google Scholar ID
+scholar_userid: hv4TPzMAAAAJ # your Google Scholar ID
 orcid_id: 0000-0002-8257-1004 # your ORCID ID
 medium_username: # your Medium username
 quora_username: # your Quora username
@@ -97,9 +98,9 @@ disqus_shortname: # put your disqus shortname
 # External sources.
 # If you have blog posts published on medium.com or other exteranl sources,
 # you can display them in your blog by adding a link to the RSS feed.
-external_sources:
-  - name: medium.com
-    rss_url: https://medium.com/@al-folio/feed
+#external_sources:
+#  - name: medium.com
+#    rss_url: https://medium.com/@al-folio/feed
 
 # -----------------------------------------------------------------------------
 # Collections
