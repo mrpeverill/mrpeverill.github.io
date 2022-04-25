@@ -1,24 +1,25 @@
 ---
 layout: about
-title: about
+title: <strong>Matthew</strong> Peverill
 permalink: /
-subtitle: <a href='#'>Affiliations</a>. Address. Contacts. Moto. Etc.
+subtitle: Post-Doctoral researcher in clinical psychology at the University of Wisconsin. 
 
 profile:
   align: right
-  image: prof_pic.jpg
+  image: matt.jpg
   address: >
-    <p>555 your office number</p>
-    <p>123 your address street</p>
-    <p>Your City, State 12345</p>
+    <p>University of Wisconsin School of Medicine & Public Health</p>
+    <p>Department of Psychiatry</p>
+    <p>6001 Research Park Blvd.</p>
+    <p>Madison, WI 5371</p>
 
 news: true  # includes a list of news items
 selected_papers: true # includes a list of papers marked as "selected={true}"
 social: true  # includes social icons at the bottom of the page
 ---
 
-Write your biography here. Tell the world about yourself. Link to your favorite [subreddit](http://reddit.com). You can put a picture in, too. The code is already in, just name your picture `prof_pic.jpg` and put it in the `img/` folder.
+I am a clinical psychological scientist and clinician in training. I am passionate about research with the potential to realize improved clinical outcomes in vulnerable, under-served, and under-studied children and families. To that end, my research has employed neuropsychological, psychological, and epidemiological tools to explore multiple mechanisms of mental health risk in children exposed to adverse experiences including child maltreatment, neglect, and poverty. Specifically, [my work]({% link _pages/publications.md %}) has investigated psychosocial threat as a dimension of adversity with unique effects on the structure and function of areas of the brain thought to be involved in emotional regulation and reactivity. I am extremely interested in pathways linking socioeconomic status to mental health outcomes, and recently published a first ever meta-analysis of the association of socioeconomic status with childhood psychopathology in population representative studies. In my [dissertation study]({% link _projects/SSES_project.markdown %}), I used multimodal measurement of socioeconomic status to research the effects of poverty on psychopathology risk factors including stress, emotion regulation, and social cognition.
 
-Put your address / P.O. box / other info right below your picture. You can also disable any these elements by editing `profile` property of the YAML header of your `_pages/about.md`. Edit `_bibliography/papers.bib` and Jekyll will render your [publications page](/al-folio/publications/) automatically.
+I completed my graduate education at the University of Washington under the supervision of [Katie McLaughlin](https://sdlab.fas.harvard.edu/). I am currently a post-doctoral research associate at Ryan Herringa's [BRAVE lab](https://brave.psychiatry.wisc.edu/).
 
-Link to your social media connections, too. This theme is set up to use [Font Awesome icons](http://fortawesome.github.io/Font-Awesome/) and [Academicons](https://jpswalsh.github.io/academicons/), like the ones below. Add your Facebook, Twitter, LinkedIn, Google Scholar, or just disable all of them.
+My methodological toolbox includes: structural MRI analysis in FreeSurfer, functional connectivity analysis in FSL, and multi-level modeling. I am a clinician in training and have received specific training in the use of behavioral parent training to address externalizing disorders in childhood, cognitive behavioral therapy for depression, and evidence based treatments for PTSD including prolonged exposure, cognitive processing therapy, and trauma-focused cognitive behavioral therapy. In a prior career I was a systems administrator and application developer. In my spare time, I enjoy cooking, reading, and playing with technology.
