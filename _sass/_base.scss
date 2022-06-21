@@ -582,3 +582,49 @@ html.transition *:after {
     }
   }
 }
+
+
+
+
+// APA tables
+
+div.post table {
+    width: 100%
+}
+
+/** Change border color to black **/
+div.post table>thead>tr>th {
+  border-color: black;
+}
+
+
+/** Remove borders within the table body **/
+div.post table>tbody>tr>td {
+  border: none;
+}
+
+
+/** Add a top border to the table header row **/
+div.post table thead tr:first-child { 
+    border-top: 2px solid black;
+    border-bottom: 2px solid black;
+}
+
+
+/** Add a bottom border to the table body **/
+div.post table tbody tr:last-child {
+  border-bottom: 2px solid black;
+}
+
+
+/** Make the table header row a normal weight; not bold **/
+div.post table th{
+  font-weight: normal;
+}
+
+
+/** Make the caption italic and black **/
+div.post table caption{
+  font-style: italic;
+  color: black;
+}

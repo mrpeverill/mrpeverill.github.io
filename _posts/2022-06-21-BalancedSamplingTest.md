@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "Splitting a Sample by Two Balancing Factors"
 author: "Matthew Peverill"
 date: "2022-06-21"
@@ -22,7 +23,8 @@ knit: (function(inputFile, encoding) {
 ---
 
 This is an example of splitting a sample in two preserving the balance
-of two related factors (in my case, site and binned income).
+of two related factors (in my case, site and binned income) in R using
+the ‘caret’ package.
 
 ``` r
 library(sn)
