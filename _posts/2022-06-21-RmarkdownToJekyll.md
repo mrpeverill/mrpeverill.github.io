@@ -6,7 +6,7 @@ date: 2022-06-21 12:40
 
 A lot has been written about writing Jekyll (the platform that generates this website -- it's frequently used with github pages), but I haven't seen a one size fits all solution. This is how I'm doing it (thanks to [Johannes Hellmuth](https://jchellmuth.com/news/jekyll/website/code/2020/01/04/Rmarkdown-posts-to-Jekyll.html) for getting me started)
 
-The magic happens in the yaml header of your rmarkdown file. Here's the header from [a recent post]({% post_url 2022-06-21-BalancedSamplingTest %}):
+The magic happens in the yaml header of your rmarkdown file. Here's the header from [a recent post]({% post_url 2022-06-22-BalancedSamplingTest %}):
 
 ```yaml
 ---
