@@ -84,7 +84,7 @@ panelbear_analytics:  # panelbear analytics site ID (format: XXXXXXXXX)
 # -----------------------------------------------------------------------------
 
 blog_name: Brain \#!bashing
-blog_description: Thoghts on Psychological Science and Technology
+blog_description: Thoughts on Psychological Science and Technology
 permalink: /blog/:year/:title/
 
 # Pagination
