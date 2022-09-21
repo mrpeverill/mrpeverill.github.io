@@ -1,0 +1,208 @@
+---
+layout: post
+title: "Selecting a matched subsample"
+author: "Matthew Peverill"
+date: "`r Sys.Date()`"
+output:
+  md_document:
+    variant: gfm
+    preserve_yaml: true
+knit: (function(inputFile, encoding) {
+    rmarkdown::render(inputFile,
+                      encoding = encoding,
+                      output_file = file.path(paste0(
+                                                  "~/Dropbox/mrpeverill-website/_posts/",
+                                                  Sys.Date(),
+                                                  '-',
+                                                  substr(basename(inputFile), 1, nchar(basename(inputFile)) - 4),
+                                                  '.md'
+                                                  )
+                                              )
+                      )
+    })
+---
+
+```{r setup, include=FALSE,cache=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(base.dir = "~/Dropbox/mrpeverill-website/", base.url = "/")
+knitr::opts_chunk$set(fig.path = "assets/img/MatchedSamplingTest/")
+```
+
+This is a second post in a series on splitting samples. In this case, say you have a very small sub-group of a large sample. You want to look at that subgroup and controls, but you don't want your sample to be 90% controls. Instead, you want the subgroup and a sub-sample of controls matched on some demographic variables. As a further complication, lets make one variable (age) continuous, and lets make age and sex correlated with subgroup membership. This example is heavily cribbed from a [post by Norbert Köhler](https://datascienceplus.com/how-to-use-r-for-matching-samples-propensity-score/).
+
+
+```{r,warning=FALSE,results=FALSE,message=FALSE}
+library(sn)
+library(tidyverse); library(ggthemes); theme_set(theme_tufte())
+library(ggExtra)
+library(pander)
+library(MatchIt)
+library(simstudy)
+```
+
+# Simulation
+
+```{r}
+set.seed(31453)
+
+simdef<-defData(varname="age",
+                dist="uniformInt",
+                formula="120;144") #age in months between 10-12
+simdef<-defData(simdef,varname="sex",
+                dist="binary",
+                formula=".5")
+simdef<-defData(simdef,varname="parent.ed",
+                dist="categorical",
+                formula=genCatFormula(n=6))
+simdef<-defData(simdef,varname="missingdata",
+                dist="binary",
+                formula=".2")
+simdef<-defData(simdef,varname="inSubGroup",
+                dist="binary",
+                formula=".005/12 * (age-132) + .005*sex + .0175")
+
+
+df<-genData(12000,simdef)
+
+df$income<-rsn(nrow(df),alpha=3)
+numbers_of_bins = 10
+df <- df %>%
+    mutate(
+        # bin i:
+        i.bin = cut(income,
+                    breaks = unique(quantile(
+                        income,
+                        probs = seq.int(0, 1, by = 1 / numbers_of_bins)
+                    )),
+                    include.lowest = TRUE,
+                    labels=FALSE)
+    )
+
+df<-as.data.frame(df)
+
+factorialize<-c("sex","missingdata","parent.ed","inSubGroup")
+df[factorialize] <- lapply(df[factorialize], factor)
+levels(df$inSubGroup)<-c("control","treatment")
+
+pander(head(df))
+
+pander(table(df$inSubGroup))
+```
+
+# Is there an imbalance?
+
+We only need to match on age, sex, and one other categorical variable.
+
+```{r}
+imbalance_model <-
+    matchit(
+        inSubGroup ~ age +sex + i.bin,
+        data = df,
+        method = NULL,
+        distance = "glm"
+    )
+
+summary(imbalance_model)
+```
+Yes, age and sex are imbalanced (which we simulated). So is income!
+
+# Nearest Neighbor Matching
+
+Note that it is important to code variable type correctly, i.e. that factors are factors and not numeric.
+
+## Sub-sampling
+
+We want 2 controls per 'treatment' participant.
+
+```{r}
+matching_model <-
+    matchit(
+        inSubGroup ~ age + sex + i.bin,
+        data = df,
+        method = "nearest",
+        distance = "glm",
+        ratio= 2
+    )
+
+summary(matching_model,un=FALSE)
+```
+
+The distribution parameters should be similar, and the control n should be twice the treated n. Then we save the new data frame:
+
+```{r}
+df.match<-match.data(matching_model)[,1:ncol(df)]
+```
+
+## Checking
+
+
+```{r}
+df.match$inSubGroup<-factor(df.match$inSubGroup,labels=c("Control","Treatment"))
+histbygroup<-function(plotdata,xvar="i") {
+	ggplot(plotdata,aes_string(x=xvar)) +
+		geom_density() +
+		facet_grid(~inSubGroup)
+}
+
+histbygroup(df.match,"i.bin")
+histbygroup(df.match,"age")
+
+barbygroup<-function(plotdata,xvar="i") {
+	ggplot(plotdata,aes_string(x=xvar)) +
+		geom_bar() +
+		facet_grid(~inSubGroup)
+}
+
+barbygroup(df.match,"sex")
+```
+
+Nearest neighbor is doing pretty well! Here's another method for comparison:
+
+# Optimal Matching
+
+## Sub-sampling
+
+We want 2 controls per 'treatment' participant.
+
+```{r}
+matching_model2 <-
+    matchit(
+        inSubGroup ~ age + sex + i.bin,
+        data = df,
+        method = "optimal",
+        distance = "glm",
+        ratio= 2
+    )
+
+summary(matching_model2,un=FALSE)
+```
+
+The distribution parameters should be similar, and the control n should be twice the treated n. Then we save the new data frame:
+
+```{r}
+df.match2<-match.data(matching_model2)[,1:ncol(df)]
+```
+
+## Checking
+
+
+```{r}
+histbygroup<-function(plotdata,xvar="i") {
+	ggplot(plotdata,aes_string(x=xvar)) +
+		geom_density() +
+		facet_grid(~inSubGroup)
+}
+
+histbygroup(df.match2,"i.bin")
+histbygroup(df.match2,"age")
+
+barbygroup<-function(plotdata,xvar="i") {
+	ggplot(plotdata,aes_string(x=xvar)) +
+		geom_bar() +
+		facet_grid(~inSubGroup)
+}
+
+barbygroup(df.match2,"sex")
+```
+
+Nearest neighbor appears to do a better job
