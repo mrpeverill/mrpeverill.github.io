@@ -54,7 +54,7 @@ hc<-hexbin(xc,yc,xbnds=c(0,10),ybnds=c(0,10),xbins=100,shape=.75)
 
 plot(h1,main="h1")
 plot(h2,main="h2")
-plot(h3,main="h2")
+plot(h3,main="h3")
 plot(hc,main="h1 and h3")
 ```
 

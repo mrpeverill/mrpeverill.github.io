@@ -61,7 +61,7 @@ plot(h2,main="h2")
 ![](/assets/img/ConcatenateHexPlots/unnamed-chunk-1-2.png)<!-- -->
 
 ``` r
-plot(h3,main="h2")
+plot(h3,main="h3")
 ```
 
 ![](/assets/img/ConcatenateHexPlots/unnamed-chunk-1-3.png)<!-- -->
@@ -78,7 +78,7 @@ What we want to do is combine the hexbins without storing the entire
 vector in memory.
 
 The hexbin object seems to store cell ids and weights separately, which
-is great for us. On disk, the hex object is 4.4464^{4} bytes, whereas
+is great for us. On disk, the hex object is 4.3152^{4} bytes, whereas
 the original vectors were 1.60096^{5} bytes. So the hexbin object does
 not store the original data.
 
@@ -97,15 +97,15 @@ c(h1,h2,h3)
 
     ## [[1]]
     ## 'hexbin' object from call: hexbin(x = x1, y = y1, xbins = 100, shape = 0.75, xbnds = c(0,      10), ybnds = c(0, 10)) 
-    ## n = 10000  points in nc = 1648  hexagon cells in grid dimensions  88 by 101 
+    ## n = 10000  points in nc = 1593  hexagon cells in grid dimensions  88 by 101 
     ## 
     ## [[2]]
     ## 'hexbin' object from call: hexbin(x = x2, y = y2, xbins = 100, shape = 0.75, xbnds = c(0,      10), ybnds = c(0, 10)) 
-    ## n = 10000  points in nc = 1606  hexagon cells in grid dimensions  88 by 101 
+    ## n = 10000  points in nc = 1619  hexagon cells in grid dimensions  88 by 101 
     ## 
     ## [[3]]
     ## 'hexbin' object from call: hexbin(x = x3, y = y3, xbins = 100, shape = 0.75, xbnds = c(0,      10), ybnds = c(0, 10)) 
-    ## n = 10000  points in nc = 3974  hexagon cells in grid dimensions  88 by 101
+    ## n = 10000  points in nc = 3988  hexagon cells in grid dimensions  88 by 101
 
 It appears that the cell id’s are mapped to the grid. You can tell by
 making a table of overlapping cell id’s from the above hexbin objects:
@@ -117,9 +117,9 @@ outer(celllist,celllist,Vectorize(\(x,y) sum(x %in% y)))
 ```
 
     ##      [,1] [,2] [,3]
-    ## [1,] 1648    0  776
-    ## [2,]    0 1606  723
-    ## [3,]  776  723 3974
+    ## [1,] 1593    0  731
+    ## [2,]    0 1619  758
+    ## [3,]  731  758 3988
 
 h1 and h2 have no shared cell id’s – but h3 overlaps with both 1 and 2.
 This is JUST what we would expect if the cell ids line up with a
@@ -140,12 +140,12 @@ data.frame(h2cellid=h2@cell[h2@cell %in% tcells],
            y3=h3xy$y[h3@cell %in% tcells])
 ```
 
-    ##   h2cellid h3cellid  x2  x3        y2        y3
-    ## 1      671      671 6.4 6.4 0.6928203 0.6928203
-    ## 2      684      684 7.7 7.7 0.6928203 0.6928203
-    ## 3      687      687 8.0 8.0 0.6928203 0.6928203
-    ## 4      883      883 7.4 7.4 0.9237604 0.9237604
-    ## 5      885      885 7.6 7.6 0.9237604 0.9237604
+    ##   h2cellid h3cellid   x2   x3        y2        y3
+    ## 1      473      473 6.80 6.80 0.4618802 0.4618802
+    ## 2      579      579 7.35 7.35 0.5773503 0.5773503
+    ## 3      673      673 6.60 6.60 0.6928203 0.6928203
+    ## 4      772      772 6.45 6.45 0.8082904 0.8082904
+    ## 5      776      776 6.85 6.85 0.8082904 0.8082904
 
 Cell ids map to specific points on an integer grid defining the possible
 hexes. Now we can make our function by simply merging the slots in the
