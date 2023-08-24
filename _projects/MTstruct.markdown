@@ -2,10 +2,10 @@
 layout: page
 title: FLUX 2019 Poster
 description: Deprivation, Threat, and Brain Structure
-img: 
+img: /assets/img/FLUX2019posterthumbnail.png
 ---
 
-<p>Thanks for coming to my poster at FLUX! Here is some more information:
+<p>This page was created to store information about my 2019 flux poster. The related paper, <a href="https://doi.org/10.1016/j.dcn.2022.101180">Childhood trauma and brain structure in children and adolescents</a>, has since been published. Here is the information originally posted about the poster:
 
 <h3>The Poster</h3>
 
