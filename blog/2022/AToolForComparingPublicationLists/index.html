@@ -2,16 +2,17 @@
 <html lang="en">
 
   <!-- Head -->
-  <head><meta http-equiv="refresh" content="3; url=https://matthewpeverill.com/" />    <!-- Metadata, OpenGraph and Schema.org -->
+  <head>    <!-- Metadata, OpenGraph and Schema.org -->
     
 
     <!-- Standard metadata -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Matthew  Peverill | Page not found</title>
+    <title>Matthew  Peverill | A Tool for Comparing Publication Lists</title>
     <meta name="author" content="Matthew  Peverill" />
-    <meta name="description" content="Looks like there has been a mistake. Nothing exists here." />
+    <meta name="description" content="Clinical Scientist and  Psychologist in Training 
+" />
     <meta name="keywords" content="academic-website, portfolio-website, neuroscience, clinical-psychology" />
 
 
@@ -32,7 +33,7 @@
     <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
     
     <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="canonical" href="https://matthewpeverill.com/404.html">
+    <link rel="canonical" href="https://matthewpeverill.com/blog/2022/AToolForComparingPublicationLists/">
     
     <!-- Dark Mode -->
     
@@ -71,7 +72,7 @@
               </li>
               
               <!-- Blog -->
-              <li class="nav-item ">
+              <li class="nav-item active">
                 <a class="nav-link" href="/blog/">blog</a>
               </li>
 
@@ -101,20 +102,64 @@
 
     <!-- Content -->
     <div class="container mt-5">
-      <!-- page.html -->
-        <div class="post">
+      <!-- _layouts/post.html -->
 
-          <header class="post-header">
-            <h1 class="post-title">Page not found</h1>
-            <p class="post-description">Looks like there has been a mistake. Nothing exists here.</p>
-          </header>
+<div class="post">
 
-          <article>
-            <p>You will be redirected to the main page within 3 seconds. If not redirected, please click <a href="https://matthewpeverill.com/">here</a>.</p>
+  <header class="post-header">
+    <h1 class="post-title">A Tool for Comparing Publication Lists</h1>
+    <p class="post-meta">September 21, 2022</p>
+    <p class="post-tags">
+      <a href="/blog/2022"> <i class="fas fa-calendar fa-sm"></i> 2022 </a>
 
-          </article>
+    </p>
+  </header>
 
-        </div>
+  <article class="post-content">
+    <p>Every web page (e.g. research gate, ORCID, google scholar) seems to want to curate their own list of my publications, which leaves me to try and bring them in to alignment. Here’s a quickpython script which will scrape the DOI numbers from two of either a webpage or text file and compare them for unique values you might want to add to the other. It also searches for duplicate DOIs. Use at your own risk, and you might have to edit the list of pre-print server DOI prefixes if you use something other than bioarxiv or psyarxiv. The script requires the pandas library.</p>
+
+<p>You can download the script from <a href="https://github.com/mrpeverill/cv_compare" target="_blank" rel="noopener noreferrer">github</a></p>
+
+<h1 id="cv_comparepy">cv_compare.py</h1>
+
+<p>Compare lists of publications with DOIs. Also reports duplicate DOIs.</p>
+
+<p>Currently only works with two arguments. Will take a url or file path. Searches DOI’s for a manually coded list of preprint servers so those can be reported.</p>
+
+<p>usage:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>~/Dropbox/code/cv_compare$ ./cv_compare.py ex_a.txt ex_b.txt
+
+</code></pre></div></div>
+<p>Outputs:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ex_a.txt
+Found 4 DOI codes
+Found 3 preprints
+___________________
+ex_b.txt
+Found 4 DOI codes
+Found 2 preprints
+___________________
+Duplicate Detection:
+1 duplicates in A
+3    10.1101/2021.09.22.461242
+Name: DOIs, dtype: object
+0 duplicates in B
+Series([], Name: DOIs, dtype: object)
+___________________
+Unique Items:
+                         DOIs  preprint                      DOIsB preprintB
+1   10.1101/2021.03.13.432212  preprint
+2  10.1016/j.jaac.2015.06.010
+0                                         10.3389/fninf.2016.00002
+1                                            10.31234/osf.io/97qbw  preprint
+3                                        10.1016/j.dcn.2017.11.006
+</code></pre></div></div>
+
+  </article>
+
+</div>
 
     </div>
 

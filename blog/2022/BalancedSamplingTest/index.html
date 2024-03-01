@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <!-- Head -->
+  <head>    <!-- Metadata, OpenGraph and Schema.org -->
+    
+
+    <!-- Standard metadata -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Matthew  Peverill | Splitting a Sample by Multiple Balancing Factors</title>
+    <meta name="author" content="Matthew  Peverill" />
+    <meta name="description" content="Clinical Scientist and  Psychologist in Training 
+" />
+    <meta name="keywords" content="academic-website, portfolio-website, neuroscience, clinical-psychology" />
+
+
+    <!-- Bootstrap & MDB -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-DF7Zhf293AJxJNTmh5zhoYYIMs2oXitRfBjY+9L//AY=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/css/mdb.min.css" integrity="sha256-jpjYvU3G3N6nrrBwXJoVEYI/0zw8htfFnhT9ljN3JJw=" crossorigin="anonymous" />
+
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.1/css/academicons.min.css" integrity="sha256-i1+4qU2G2860dGGIOJscdC30s9beBXjFfzjWLjBRsBg=" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons">
+
+    <!-- Code Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jwarby/jekyll-pygments-themes@master/github.css" media="none" id="highlight_theme_light" />
+
+    <!-- Styles -->
+    
+    <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+    
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="canonical" href="https://matthewpeverill.com/blog/2022/BalancedSamplingTest/">
+    
+    <!-- Dark Mode -->
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jwarby/jekyll-pygments-themes@master/native.css" media="none" id="highlight_theme_dark" />
+
+    <script src="/assets/js/theme.js"></script>
+    <script src="/assets/js/dark_mode.js"></script>
+    
+
+  </head>
+
+  <!-- Body -->
+  <body class="fixed-top-nav ">
+
+    <!-- Header -->
+    <header>
+
+      <!-- Nav Bar -->
+      <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top">
+        <div class="container">
+          <a class="navbar-brand title font-weight-lighter" href="https://matthewpeverill.com/"><span class="font-weight-bold">Matthew</span>   Peverill</a>
+          <!-- Navbar Toggle -->
+          <button class="navbar-toggler collapsed ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar top-bar"></span>
+            <span class="icon-bar middle-bar"></span>
+            <span class="icon-bar bottom-bar"></span>
+          </button>
+
+          <div class="collapse navbar-collapse text-right" id="navbarNav">
+            <ul class="navbar-nav ml-auto flex-nowrap">
+
+              <!-- About -->
+              <li class="nav-item ">
+                <a class="nav-link" href="/">about</a>
+              </li>
+              
+              <!-- Blog -->
+              <li class="nav-item active">
+                <a class="nav-link" href="/blog/">blog</a>
+              </li>
+
+              <!-- Other pages -->
+              <li class="nav-item ">
+                <a class="nav-link" href="/projects/">projects</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/publications/">publications</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/CV/">vitae</a>
+              </li>
+
+              <!-- Toogle theme mode -->
+              <div class="toggle-container">
+                <a id="light-toggle">
+                  <i class="fas fa-moon"></i>
+                  <i class="fas fa-sun"></i>
+                </a>
+              </div>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Content -->
+    <div class="container mt-5">
+      <!-- _layouts/post.html -->
+
+<div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Splitting a Sample by Multiple Balancing Factors</h1>
+    <p class="post-meta">June 22, 2022• Matthew Peverill</p>
+    <p class="post-tags">
+      <a href="/blog/2022"> <i class="fas fa-calendar fa-sm"></i> 2022 </a>
+
+    </p>
+  </header>
+
+  <article class="post-content">
+    <p>This is an example of splitting a sample in two preserving the balance
+of several variables in R.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">sn</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">);</span><span class="w"> </span><span class="n">library</span><span class="p">(</span><span class="n">ggthemes</span><span class="p">);</span><span class="w"> </span><span class="n">theme_set</span><span class="p">(</span><span class="n">theme_tufte</span><span class="p">())</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">caret</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">pander</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">simstudy</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<h1 id="two-factors-using-caret">Two factors using caret</h1>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">set.seed</span><span class="p">(</span><span class="m">3453</span><span class="p">)</span><span class="w">
+</span><span class="c1">#rsn samples from a skewed normal distribution</span><span class="w">
+</span><span class="n">site1</span><span class="o">&lt;-</span><span class="n">data.frame</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="n">rsn</span><span class="p">(</span><span class="m">2000</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="m">-3</span><span class="p">))</span><span class="w">
+</span><span class="n">site2</span><span class="o">&lt;-</span><span class="n">data.frame</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="n">rsn</span><span class="p">(</span><span class="m">4000</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="m">0</span><span class="p">))</span><span class="w">
+</span><span class="n">site3</span><span class="o">&lt;-</span><span class="n">data.frame</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="n">rsn</span><span class="p">(</span><span class="m">1000</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="m">3</span><span class="p">))</span><span class="w">
+</span><span class="n">sitedesc</span><span class="o">&lt;-</span><span class="n">factor</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="nf">rep</span><span class="p">(</span><span class="s2">"site.one"</span><span class="p">,</span><span class="m">2000</span><span class="p">),</span><span class="w">
+                   </span><span class="nf">rep</span><span class="p">(</span><span class="s2">"site.two"</span><span class="p">,</span><span class="m">4000</span><span class="p">),</span><span class="w">
+                   </span><span class="nf">rep</span><span class="p">(</span><span class="s2">"site.three"</span><span class="p">,</span><span class="m">1000</span><span class="p">)))</span><span class="w">
+</span><span class="n">df</span><span class="o">&lt;-</span><span class="n">rbind</span><span class="p">(</span><span class="n">site1</span><span class="p">,</span><span class="n">site2</span><span class="p">,</span><span class="n">site3</span><span class="p">)</span><span class="w">
+</span><span class="n">df</span><span class="o">$</span><span class="n">site</span><span class="o">&lt;-</span><span class="n">sitedesc</span><span class="w">
+
+
+</span><span class="n">numbers_of_bins</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="w">
+</span><span class="n">df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+    </span><span class="n">mutate</span><span class="p">(</span><span class="w">
+        </span><span class="c1"># bin i:</span><span class="w">
+        </span><span class="n">i.bin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cut</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w">
+                    </span><span class="n">breaks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">unique</span><span class="p">(</span><span class="n">quantile</span><span class="p">(</span><span class="w">
+                        </span><span class="n">i</span><span class="p">,</span><span class="w">
+                        </span><span class="n">probs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">seq.int</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">numbers_of_bins</span><span class="p">)</span><span class="w">
+                    </span><span class="p">)),</span><span class="w">
+                    </span><span class="n">include.lowest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w">
+                    </span><span class="n">labels</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">),</span><span class="w">
+        </span><span class="c1"># interact the factors to make a unique level for each combination.</span><span class="w">
+        </span><span class="n">interaction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">interaction</span><span class="p">(</span><span class="n">i.bin</span><span class="p">,</span><span class="w"> </span><span class="n">site</span><span class="p">)</span><span class="w"> 
+    </span><span class="p">)</span><span class="w">
+</span><span class="n">pander</span><span class="p">(</span><span class="n">head</span><span class="p">(</span><span class="n">df</span><span class="p">))</span><span class="w">
+</span></code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">i</th>
+      <th style="text-align: center">site</th>
+      <th style="text-align: center">i.bin</th>
+      <th style="text-align: center">interaction</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">-1.504</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">1.site.one</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">-1.031</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">2</td>
+      <td style="text-align: center">2.site.one</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">-0.8683</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">3.site.one</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">-1.119</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">2</td>
+      <td style="text-align: center">2.site.one</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">-0.4916</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">4.site.one</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">-0.4953</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">4.site.one</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Now that the factors are combined, we can sample evenly from them using
+caret</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">trainIndex</span><span class="o">&lt;-</span><span class="n">createDataPartition</span><span class="p">(</span><span class="n">df</span><span class="o">$</span><span class="n">interaction</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="m">.5</span><span class="p">,</span><span class="n">times</span><span class="o">=</span><span class="m">1</span><span class="p">,</span><span class="n">list</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## Warning in createDataPartition(df$interaction, p = 0.5, times = 1, list =
+## FALSE): Some classes have no records ( 9.site.one, 10.site.one, 1.site.three,
+## 2.site.three ) and these will be ignored
+
+## Warning in createDataPartition(df$interaction, p = 0.5, times = 1, list =
+## FALSE): Some classes have a single record ( 3.site.three ) and these will be
+## selected for the sample
+</code></pre></div></div>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span><span class="o">$</span><span class="n">train</span><span class="o">&lt;-</span><span class="kc">FALSE</span><span class="w">
+</span><span class="n">df</span><span class="o">$</span><span class="n">train</span><span class="p">[</span><span class="n">trainIndex</span><span class="p">]</span><span class="o">&lt;-</span><span class="kc">TRUE</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Let’s use some plots to verify:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">histbysite</span><span class="o">&lt;-</span><span class="k">function</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">xvar</span><span class="o">=</span><span class="s2">"i"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">ggplot</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">aes_string</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">xvar</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">geom_histogram</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">facet_grid</span><span class="p">(</span><span class="o">~</span><span class="n">site</span><span class="p">)</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">histbysite</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Whole Sample"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-4-1.png" alt=""><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">histbysite</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">$</span><span class="n">train</span><span class="p">,])</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Training"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-4-2.png" alt=""><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">histbysite</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="o">!</span><span class="n">df</span><span class="o">$</span><span class="n">train</span><span class="p">,])</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Test"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-4-3.png" alt=""><!-- --></p>
+
+<h1 id="many-factors">Many factors</h1>
+
+<h2 id="simulate">Simulate</h2>
+
+<p>Let’s simulate some other factors to add to our test dataset.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">simdef</span><span class="o">&lt;-</span><span class="n">defData</span><span class="p">(</span><span class="n">varname</span><span class="o">=</span><span class="s2">"age"</span><span class="p">,</span><span class="w">
+                </span><span class="n">dist</span><span class="o">=</span><span class="s2">"categorical"</span><span class="p">,</span><span class="w">
+                </span><span class="n">formula</span><span class="o">=</span><span class="n">genCatFormula</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="m">5</span><span class="p">))</span><span class="w">
+</span><span class="n">simdef</span><span class="o">&lt;-</span><span class="n">defData</span><span class="p">(</span><span class="n">simdef</span><span class="p">,</span><span class="n">varname</span><span class="o">=</span><span class="s2">"sex"</span><span class="p">,</span><span class="w">
+                </span><span class="n">dist</span><span class="o">=</span><span class="s2">"binary"</span><span class="p">,</span><span class="w">
+                </span><span class="n">formula</span><span class="o">=</span><span class="s2">".5"</span><span class="p">)</span><span class="w">
+</span><span class="n">simdef</span><span class="o">&lt;-</span><span class="n">defData</span><span class="p">(</span><span class="n">simdef</span><span class="p">,</span><span class="n">varname</span><span class="o">=</span><span class="s2">"parent.ed"</span><span class="p">,</span><span class="w">
+                </span><span class="n">dist</span><span class="o">=</span><span class="s2">"categorical"</span><span class="p">,</span><span class="w">
+                </span><span class="n">formula</span><span class="o">=</span><span class="n">genCatFormula</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="m">6</span><span class="p">))</span><span class="w">
+</span><span class="n">simdef</span><span class="o">&lt;-</span><span class="n">defData</span><span class="p">(</span><span class="n">simdef</span><span class="p">,</span><span class="n">varname</span><span class="o">=</span><span class="s2">"missingdata"</span><span class="p">,</span><span class="w">
+                </span><span class="n">dist</span><span class="o">=</span><span class="s2">"binary"</span><span class="p">,</span><span class="w">
+                </span><span class="n">formula</span><span class="o">=</span><span class="s2">".2"</span><span class="p">)</span><span class="w">
+
+</span><span class="n">df2</span><span class="o">&lt;-</span><span class="n">cbind</span><span class="p">(</span><span class="n">df</span><span class="p">[,</span><span class="m">1</span><span class="o">:</span><span class="m">3</span><span class="p">],</span><span class="n">genData</span><span class="p">(</span><span class="n">nrow</span><span class="p">(</span><span class="n">df</span><span class="p">),</span><span class="n">simdef</span><span class="p">))</span><span class="w"> </span><span class="c1"># drop interaction</span><span class="w">
+</span><span class="n">df2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df2</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+  </span><span class="n">select</span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">everything</span><span class="p">())</span><span class="w"> </span><span class="c1"># put id at the front of the dataset</span><span class="w">
+
+</span><span class="n">factorialize</span><span class="o">&lt;-</span><span class="nf">c</span><span class="p">(</span><span class="s2">"i.bin"</span><span class="p">,</span><span class="s2">"age"</span><span class="p">,</span><span class="s2">"sex"</span><span class="p">,</span><span class="s2">"missingdata"</span><span class="p">,</span><span class="s2">"parent.ed"</span><span class="p">)</span><span class="w">
+</span><span class="n">df2</span><span class="p">[</span><span class="n">factorialize</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">lapply</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="n">factorialize</span><span class="p">],</span><span class="w"> </span><span class="n">factor</span><span class="p">)</span><span class="w">
+
+</span><span class="n">pander</span><span class="p">(</span><span class="n">head</span><span class="p">(</span><span class="n">df2</span><span class="p">))</span><span class="w">
+</span></code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">id</th>
+      <th style="text-align: center">i</th>
+      <th style="text-align: center">site</th>
+      <th style="text-align: center">i.bin</th>
+      <th style="text-align: center">age</th>
+      <th style="text-align: center">sex</th>
+      <th style="text-align: center">parent.ed</th>
+      <th style="text-align: center">missingdata</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">-1.504</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">0</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">2</td>
+      <td style="text-align: center">-1.031</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">2</td>
+      <td style="text-align: center">5</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">0</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">-0.8683</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">5</td>
+      <td style="text-align: center">0</td>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">0</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">-1.119</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">2</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">1</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">5</td>
+      <td style="text-align: center">-0.4916</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">5</td>
+      <td style="text-align: center">0</td>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">1</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">6</td>
+      <td style="text-align: center">-0.4953</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">5</td>
+      <td style="text-align: center">1</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Then we partition as above:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df2</span><span class="o">$</span><span class="n">interaction</span><span class="o">=</span><span class="n">interaction</span><span class="p">(</span><span class="n">df2</span><span class="p">[,</span><span class="o">-</span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="m">2</span><span class="p">)])</span><span class="w">
+</span><span class="n">trainIndex</span><span class="o">&lt;-</span><span class="n">createDataPartition</span><span class="p">(</span><span class="n">df2</span><span class="o">$</span><span class="n">interaction</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="m">.5</span><span class="p">,</span><span class="n">times</span><span class="o">=</span><span class="m">1</span><span class="p">,</span><span class="n">list</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## Warning in createDataPartition(df2$interaction, p = 0.5, times = 1,
+## list = FALSE): Some classes have no records ( site.three.1.1.0.1.0,
+## site.three.2.1.0.1.0, site.three.3.1.0.1.0, site.three.4.1.0.1.0,
+## site.three.6.1.0.1.0, site.one.7.1.0.1.0, site.one.8.1.0.1.0,
+## site.one.9.1.0.1.0, site.one.10.1.0.1.0, site.three.1.2.0.1.0,
+## site.three.2.2.0.1.0, site.three.3.2.0.1.0, site.one.4.2.0.1.0,
+## site.three.4.2.0.1.0, site.one.7.2.0.1.0, site.one.8.2.0.1.0,
+## site.one.9.2.0.1.0, site.one.10.2.0.1.0, site.three.1.3.0.1.0,
+## site.three.2.3.0.1.0, site.three.3.3.0.1.0, site.three.4.3.0.1.0,
+## site.one.8.3.0.1.0, site.one.9.3.0.1.0, site.one.10.3.0.1.0,
+## site.three.10.3.0.1.0, site.three.1.4.0.1.0, site.three.2.4.0.1.0,
+## site.three.4.4.0.1.0, site.three.5.4.0.1.0, site.one.9.4.0.1.0,
+## site.one.10.4.0.1.0, site.three.1.5.0.1.0, site.three.2.5.0.1.0,
+## site.three.3.5.0.1.0, site.three.4.5.0.1.0, site.three.5.5.0.1.0,
+## site.one.9.5.0.1.0, site.one.10.5.0.1.0, site.three.1.1.1.1.0,
+## site.three.2.1.1.1.0, site.three.3.1.1.1.0, site.three.4.1.1.1.0,
+## site.one.7.1.1.1.0, site.one.9.1.1.1.0, site.one.10.1.1.1.0,
+## site.three.1.2.1.1.0, site.three.2.2.1.1.0, site.three.3.2.1.1.0,
+## site.two.3.2.1.1.0, site.three.4.2.1.1.0, site.three.5.2.1.1.0,
+## site.one.9.2.1.1.0, site.one.10.2.1.1.0, site.three.1.3.1.1.0,
+## site.three.2.3.1.1.0, site.three.3.3.1.1.0, site.three.4.3.1.1.0,
+## site.three.5.3.1.1.0, site.three.6.3.1.1.0, site.one.7.3.1.1.0,
+## site.three.7.3.1.1.0, site.one.8.3.1.1.0, site.one.9.3.1.1.0,
+## site.one.10.3.1.1.0, site.three.1.4.1.1.0, site.three.2.4.1.1.0,
+## site.three.3.4.1.1.0, site.three.4.4.1.1.0, site.one.8.4.1.1.0,
+## site.one.9.4.1.1.0, site.one.10.4.1.1.0, site.three.1.5.1.1.0,
+## site.three.2.5.1.1.0, site.three.3.5.1.1.0, site.three.4.5.1.1.0,
+## site.two.4.5.1.1.0, site.three.5.5.1.1.0, site.one.6.5.1.1.0,
+## site.three.6.5.1.1.0, site.one.7.5.1.1.0, site.one.8.5.1.1.0,
+## site.one.9.5.1.1.0, site.one.10.5.1.1.0, site.three.1.1.0.2.0,
+## site.three.2.1.0.2.0, site.three.3.1.0.2.0, site.three.4.1.0.2.0,
+## site.three.5.1.0.2.0, site.one.7.1.0.2.0, site.one.8.1.0.2.0,
+## site.one.9.1.0.2.0, site.one.10.1.0.2.0, site.three.1.2.0.2.0,
+## site.three.2.2.0.2.0, site.three.3.2.0.2.0, site.three.4.2.0.2.0,
+## site.one.7.2.0.2.0, site.one.8.2.0.2.0, site.one.9.2.0.2.0,
+## site.one.10.2.0.2.0, site.three.1.3.0.2.0, site.three.2.3.0.2.0,
+## site.three.3.3.0.2.0, site.three.4.3.0.2.0, site.three.5.3.0.2.0,
+## site.three.6.3.0.2.0, site.one.9.3.0.2.0, site.one.10.3.0.2.0,
+## site.three.1.4.0.2.0, site.three.2.4.0.2.0, site.three.3.4.0.2.0,
+## site.three.4.4.0.2.0, site.one.5.4.0.2.0, site.three.5.4.0.2.0,
+## site.one.7.4.0.2.0, site.one.8.4.0.2.0, site.one.9.4.0.2.0, site.one.10.4.0.2.0,
+## site.three.1.5.0.2.0, site.three.2.5.0.2.0, site.three.3.5.0.2.0,
+## site.three.5.5.0.2.0, site.three.6.5.0.2.0, site.one.7.5.0.2.0,
+## site.one.8.5.0.2.0, site.one.9.5.0.2.0, site.one.10.5.0.2.0,
+## site.three.1.1.1.2.0, site.three.2.1.1.2.0, site.three.3.1.1.2.0,
+## site.three.4.1.1.2.0, site.three.5.1.1.2.0, site.three.6.1.1.2.0,
+## site.one.8.1.1.2.0, site.one.9.1.1.2.0, site.one.10.1.1.2.0,
+## site.three.1.2.1.2.0, site.three.2.2.1.2.0, site.three.3.2.1.2.0,
+## site.three.4.2.1.2.0, site.three.5.2.1.2.0, site.three.6.2.1.2.0,
+## site.one.8.2.1.2.0, site.one.9.2.1.2.0, site.one.10.2.1.2.0,
+## site.three.1.3.1.2.0, site.three.2.3.1.2.0, site.three.3.3.1.2.0,
+## site.three.4.3.1.2.0, site.three.6.3.1.2.0, site.one.7.3.1.2.0,
+## site.one.9.3.1.2.0, site.one.10.3.1.2.0, site.three.1.4.1.2.0,
+## site.three.2.4.1.2.0, site.three.3.4.1.2.0, site.one.7.4.1.2.0,
+## site.one.9.4.1.2.0, site.one.10.4.1.2.0, site.three.1.5.1.2.0,
+## site.three.2.5.1.2.0, site.three.3.5.1.2.0, site.three.4.5.1.2.0,
+## site.three.5.5.1.2.0, site.one.6.5.1.2.0, site.one.8.5.1.2.0,
+## site.one.9.5.1.2.0, site.one.10.5.1.2.0, site.three.1.1.0.3.0,
+## site.three.2.1.0.3.0, site.three.3.1.0.3.0, site.three.4.1.0.3.0,
+## site.three.5.1.0.3.0, site.one.8.1.0.3.0, site.one.9.1.0.3.0,
+## site.one.10.1.0.3.0, site.three.1.2.0.3.0, site.three.2.2.0.3.0,
+## site.three.3.2.0.3.0, site.three.5.2.0.3.0, site.one.8.2.0.3.0,
+## site.one.9.2.0.3.0, site.one.10.2.0.3.0, site.one.1.3.0.3.0,
+## site.three.1.3.0.3.0, site.three.2.3.0.3.0, site.three.3.3.0.3.0,
+## site.three.4.3.0.3.0, site.three.5.3.0.3.0, site.one.8.3.0.3.0,
+## site.one.9.3.0.3.0, site.one.10.3.0.3.0, site.three.1.4.0.3.0,
+## site.three.2.4.0.3.0, site.three.3.4.0.3.0, site.three.4.4.0.3.0,
+## site.three.5.4.0.3.0, site.one.7.4.0.3.0, site.three.7.4.0.3.0,
+## site.one.8.4.0.3.0, site.one.9.4.0.3.0, site.one.10.4.0.3.0,
+## site.three.1.5.0.3.0, site.three.2.5.0.3.0, site.three.3.5.0.3.0,
+## site.three.4.5.0.3.0, site.three.5.5.0.3.0, site.three.6.5.0.3.0,
+## site.one.9.5.0.3.0, site.one.10.5.0.3.0, site.three.1.1.1.3.0,
+## site.three.2.1.1.3.0, site.three.3.1.1.3.0, site.three.4.1.1.3.0,
+## site.three.5.1.1.3.0, site.one.7.1.1.3.0, site.one.9.1.1.3.0,
+## site.one.10.1.1.3.0, site.three.1.2.1.3.0, site.three.2.2.1.3.0,
+## site.three.3.2.1.3.0, site.three.4.2.1.3.0, site.three.5.2.1.3.0,
+## site.one.9.2.1.3.0, site.one.10.2.1.3.0, site.three.1.3.1.3.0,
+## site.three.2.3.1.3.0, site.three.3.3.1.3.0, site.three.4.3.1.3.0,
+## site.three.5.3.1.3.0, site.three.6.3.1.3.0, site.three.7.3.1.3.0,
+## site.one.9.3.1.3.0, site.one.10.3.1.3.0, site.three.1.4.1.3.0,
+## site.three.2.4.1.3.0, site.three.3.4.1.3.0, site.three.4.4.1.3.0,
+## site.three.5.4.1.3.0, site.one.7.4.1.3.0, site.one.8.4.1.3.0,
+## site.one.9.4.1.3.0, site.one.10.4.1.3.0, site.three.10.4.1.3.0,
+## site.three.1.5.1.3.0, site.three.2.5.1.3.0, site.three.3.5.1.3.0,
+## site.three.5.5.1.3.0, site.one.6.5.1.3.0, site.three.6.5.1.3.0,
+## site.one.8.5.1.3.0, site.one.9.5.1.3.0, site.one.10.5.1.3.0,
+## site.three.1.1.0.4.0, site.three.2.1.0.4.0, site.three.3.1.0.4.0,
+## site.three.4.1.0.4.0, site.three.5.1.0.4.0, site.three.6.1.0.4.0,
+## site.one.8.1.0.4.0, site.one.9.1.0.4.0, site.one.10.1.0.4.0,
+## site.three.1.2.0.4.0, site.three.2.2.0.4.0, site.three.3.2.0.4.0,
+## site.three.4.2.0.4.0, site.three.5.2.0.4.0, site.one.8.2.0.4.0,
+## site.one.9.2.0.4.0, site.one.10.2.0.4.0, site.three.1.3.0.4.0,
+## site.three.2.3.0.4.0, site.three.3.3.0.4.0, site.one.4.3.0.4.0,
+## site.three.4.3.0.4.0, site.one.9.3.0.4.0, site.one.10.3.0.4.0,
+## site.three.1.4.0.4.0, site.three.2.4.0.4.0, site.three.3.4.0.4.0,
+## site.three.4.4.0.4.0, site.one.7.4.0.4.0, site.one.8.4.0.4.0,
+## site.one.9.4.0.4.0, site.one.10.4.0.4.0, site.three.1.5.0.4.0,
+## site.three.2.5.0.4.0, site.three.3.5.0.4.0, site.three.4.5.0.4.0,
+## site.one.8.5.0.4.0, site.one.9.5.0.4.0, site.one.10.5.0.4.0,
+## site.three.1.1.1.4.0, site.three.2.1.1.4.0, site.three.3.1.1.4.0,
+## site.three.4.1.1.4.0, site.three.5.1.1.4.0, site.one.6.1.1.4.0,
+## site.three.7.1.1.4.0, site.one.8.1.1.4.0, site.one.9.1.1.4.0,
+## site.one.10.1.1.4.0, site.three.1.2.1.4.0, site.three.2.2.1.4.0,
+## site.three.3.2.1.4.0, site.three.4.2.1.4.0, site.three.6.2.1.4.0,
+## site.one.7.2.1.4.0, site.one.8.2.1.4.0, site.one.9.2.1.4.0, site.one.10.2.1.4.0,
+## site.three.1.3.1.4.0, site.three.2.3.1.4.0, site.three.3.3.1.4.0,
+## site.one.8.3.1.4.0, site.three.8.3.1.4.0, site.one.9.3.1.4.0,
+## site.one.10.3.1.4.0, site.three.1.4.1.4.0, site.three.2.4.1.4.0,
+## site.three.3.4.1.4.0, site.three.4.4.1.4.0, site.one.6.4.1.4.0,
+## site.three.6.4.1.4.0, site.one.8.4.1.4.0, site.one.9.4.1.4.0,
+## site.one.10.4.1.4.0, site.three.1.5.1.4.0, site.three.2.5.1.4.0,
+## site.three.3.5.1.4.0, site.three.4.5.1.4.0, site.one.7.5.1.4.0,
+## site.one.8.5.1.4.0, site.one.9.5.1.4.0, site.one.10.5.1.4.0,
+## site.three.1.1.0.5.0, site.three.2.1.0.5.0, site.three.3.1.0.5.0,
+## site.three.4.1.0.5.0, site.one.6.1.0.5.0, site.one.9.1.0.5.0,
+## site.one.10.1.0.5.0, site.three.1.2.0.5.0, site.three.2.2.0.5.0,
+## site.three.3.2.0.5.0, site.three.4.2.0.5.0, site.three.6.2.0.5.0,
+## site.one.8.2.0.5.0, site.one.9.2.0.5.0, site.one.10.2.0.5.0,
+## site.three.1.3.0.5.0, site.three.2.3.0.5.0, site.three.3.3.0.5.0,
+## site.three.4.3.0.5.0, site.one.8.3.0.5.0, site.three.8.3.0.5.0,
+## site.one.9.3.0.5.0, site.one.10.3.0.5.0, site.three.1.4.0.5.0,
+## site.three.2.4.0.5.0, site.three.3.4.0.5.0, site.three.4.4.0.5.0,
+## site.three.5.4.0.5.0, site.one.8.4.0.5.0, site.one.9.4.0.5.0,
+## site.one.10.4.0.5.0, site.three.1.5.0.5.0, site.three.2.5.0.5.0,
+## site.three.3.5.0.5.0, site.three.4.5.0.5.0, site.one.9.5.0.5.0,
+## site.one.10.5.0.5.0, site.three.1.1.1.5.0, site.three.2.1.1.5.0,
+## site.three.3.1.1.5.0, site.three.5.1.1.5.0, site.one.8.1.1.5.0,
+## site.one.9.1.1.5.0, site.one.10.1.1.5.0, site.three.1.2.1.5.0,
+## site.three.2.2.1.5.0, site.three.3.
+
+## Warning in createDataPartition(df2$interaction, p = 0.5, times = 1,
+## list = FALSE): Some classes have a single record ( site.three.5.1.0.1.0,
+## site.three.8.1.0.1.0, site.one.6.2.0.1.0, site.three.6.2.0.1.0,
+## site.three.5.3.0.1.0, site.three.8.3.0.1.0, site.three.3.4.0.1.0,
+## site.one.6.4.0.1.0, site.three.6.4.0.1.0, site.one.7.4.0.1.0,
+## site.one.8.4.0.1.0, site.three.9.4.0.1.0, site.one.8.5.0.1.0,
+## site.three.6.1.1.1.0, site.one.8.1.1.1.0, site.one.2.2.1.1.0,
+## site.two.4.2.1.1.0, site.one.6.2.1.1.0, site.one.7.2.1.1.0,
+## site.one.8.2.1.1.0, site.one.1.3.1.1.0, site.three.10.3.1.1.0,
+## site.two.4.4.1.1.0, site.one.6.4.1.1.0, site.one.7.4.1.1.0,
+## site.two.1.5.1.1.0, site.three.7.5.1.1.0, site.three.9.5.1.1.0,
+## site.three.10.5.1.1.0, site.three.6.1.0.2.0, site.three.7.1.0.2.0,
+## site.two.3.2.0.2.0, site.three.5.2.0.2.0, site.three.10.2.0.2.0,
+## site.one.5.3.0.2.0, site.one.8.3.0.2.0, site.three.9.4.0.2.0,
+## site.three.4.5.0.2.0, site.one.6.5.0.2.0, site.one.4.1.1.2.0,
+## site.one.7.1.1.2.0, site.three.7.1.1.2.0, site.one.7.2.1.2.0,
+## site.three.8.2.1.2.0, site.three.7.3.1.2.0, site.one.8.3.1.2.0,
+## site.two.2.4.1.2.0, site.three.4.4.1.2.0, site.three.5.4.1.2.0,
+## site.three.6.4.1.2.0, site.two.3.5.1.2.0, site.one.7.5.1.2.0,
+## site.three.7.5.1.2.0, site.two.8.5.1.2.0, site.three.9.5.1.2.0,
+## site.one.5.1.0.3.0, site.three.6.1.0.3.0, site.three.10.1.0.3.0,
+## site.one.6.2.0.3.0, site.three.6.2.0.3.0, site.three.8.2.0.3.0,
+## site.three.10.2.0.3.0, site.one.7.3.0.3.0, site.three.6.4.0.3.0,
+## site.three.8.4.0.3.0, site.two.2.5.0.3.0, site.one.8.5.0.3.0,
+## site.two.8.5.0.3.0, site.three.9.1.1.3.0, site.one.8.2.1.3.0,
+## site.one.8.3.1.3.0, site.two.2.4.1.3.0, site.three.6.4.1.3.0,
+## site.three.4.5.1.3.0, site.one.5.5.1.3.0, site.three.7.5.1.3.0,
+## site.three.8.5.1.3.0, site.one.6.1.0.4.0, site.one.7.1.0.4.0,
+## site.three.5.3.0.4.0, site.one.6.3.0.4.0, site.three.6.3.0.4.0,
+## site.one.8.3.0.4.0, site.two.3.4.0.4.0, site.three.5.4.0.4.0,
+## site.three.6.4.0.4.0, site.three.5.5.0.4.0, site.three.10.1.1.4.0,
+## site.three.5.2.1.4.0, site.one.6.2.1.4.0, site.three.4.3.1.4.0,
+## site.three.6.3.1.4.0, site.one.7.3.1.4.0, site.two.7.3.1.4.0,
+## site.three.5.4.1.4.0, site.three.8.4.1.4.0, site.three.9.4.1.4.0,
+## site.two.4.5.1.4.0, site.three.5.5.1.4.0, site.one.8.1.0.5.0,
+## site.three.5.2.0.5.0, site.one.7.2.0.5.0, site.three.7.2.0.5.0,
+## site.three.10.2.0.5.0, site.three.5.3.0.5.0, site.one.7.3.0.5.0,
+## site.one.5.4.0.5.0, site.one.6.4.0.5.0, site.three.6.4.0.5.0,
+## site.three.5.5.0.5.0, site.one.8.5.0.5.0, site.three.10.5.0.5.0,
+## site.one.3.1.1.5.0, site.three.4.1.1.5.0, site.one.7.1.1.5.0,
+## site.one.1.2.1.5.0, site.three.4.2.1.5.0, site.one.6.2.1.5.0,
+## site.three.6.2.1.5.0, site.one.7.2.1.5.0, site.three.7.2.1.5.0,
+## site.one.8.2.1.5.0, site.three.6.3.1.5.0, site.three.5.4.1.5.0,
+## site.three.6.4.1.5.0, site.three.8.4.1.5.0, site.three.9.4.1.5.0,
+## site.three.4.5.1.5.0, site.three.7.5.1.5.0, site.three.8.5.1.5.0,
+## site.one.3.1.0.6.0, site.one.5.1.0.6.0, site.three.5.1.0.6.0,
+## site.one.8.1.0.6.0, site.three.10.1.0.6.0, site.three.5.2.0.6.0,
+## site.one.7.2.0.6.0, site.one.8.2.0.6.0, site.one.3.3.0.6.0,
+## site.one.7.3.0.6.0, site.one.5.4.0.6.0, site.three.5.4.0.6.0,
+## site.three.5.5.0.6.0, site.two.3.1.1.6.0, site.one.5.1.1.6.0,
+## site.three.6.1.1.6.0, site.three.8.1.1.6.0, site.one.7.2.1.6.0,
+## site.three.7.2.1.6.0, site.one.7.3.1.6.0, site.three.4.4.1.6.0,
+## site.three.6.4.1.6.0, site.one.7.4.1.6.0, site.two.3.5.1.6.0,
+## site.one.3.1.0.1.1, site.three.5.1.0.1.1, site.three.6.1.0.1.1,
+## site.two.6.1.0.1.1, site.one.7.1.0.1.1, site.three.8.1.0.1.1,
+## site.two.9.1.0.1.1, site.one.1.2.0.1.1, site.one.2.2.0.1.1, site.one.6.2.0.1.1,
+## site.three.7.2.0.1.1, site.two.7.2.0.1.1, site.two.8.2.0.1.1,
+## site.two.9.2.0.1.1, site.three.10.2.0.1.1, site.three.4.3.0.1.1,
+## site.one.5.3.0.1.1, site.one.6.3.0.1.1, site.three.7.3.0.1.1,
+## site.two.7.3.0.1.1, site.two.8.3.0.1.1, site.three.10.3.0.1.1,
+## site.two.1.4.0.1.1, site.two.2.4.0.1.1, site.two.6.4.0.1.1, site.one.7.4.0.1.1,
+## site.three.8.4.0.1.1, site.two.8.4.0.1.1, site.three.9.4.0.1.1,
+## site.three.10.4.0.1.1, site.two.10.4.0.1.1, site.two.3.5.0.1.1,
+## site.one.4.5.0.1.1, site.one.5.5.0.1.1, site.two.5.5.0.1.1,
+## site.three.7.5.0.1.1, site.two.7.5.0.1.1, site.two.8.5.0.1.1,
+## site.one.1.1.1.1.1, site.two.1.1.1.1.1, site.two.2.1.1.1.1, site.two.3.1.1.1.1,
+## site.one.6.1.1.1.1, site.three.8.1.1.1.1, site.three.9.1.1.1.1,
+## site.three.10.1.1.1.1, site.two.10.1.1.1.1, site.one.5.2.1.1.1,
+## site.three.5.2.1.1.1, site.two.6.2.1.1.1, site.two.8.2.1.1.1,
+## site.two.10.2.1.1.1, site.two.1.3.1.1.1, site.two.2.3.1.1.1,
+## site.one.3.3.1.1.1, site.one.5.3.1.1.1, site.two.5.3.1.1.1, site.one.7.3.1.1.1,
+## site.two.7.3.1.1.1, site.three.8.3.1.1.1, site.two.8.3.1.1.1,
+## site.three.9.3.1.1.1, site.two.9.3.1.1.1, site.one.2.4.1.1.1,
+## site.two.2.4.1.1.1, site.one.3.4.1.1.1, site.two.4.4.1.1.1, site.two.5.4.1.1.1,
+## site.two.6.4.1.1.1, site.three.8.4.1.1.1, site.three.9.4.1.1.1,
+## site.two.9.4.1.1.1, site.one.2.5.1.1.1, site.two.6.5.1.1.1, site.one.7.5.1.1.1,
+## site.three.7.5.1.1.1, site.three.9.5.1.1.1, site.two.9.5.1.1.1,
+## site.three.10.5.1.1.1, site.one.1.1.0.2.1, site.two.2.1.0.2.1,
+## site.two.4.1.0.2.1, site.one.5.1.0.2.1, site.three.6.1.0.2.1,
+## site.two.6.1.0.2.1, site.two.9.1.0.2.1, site.one.2.2.0.2.1, site.one.5.2.0.2.1,
+## site.three.6.2.0.2.1, site.two.6.2.0.2.1, site.three.7.2.0.2.1,
+## site.two.9.2.0.2.1, site.one.1.3.0.2.1, site.one.3.3.0.2.1, site.two.3.3.0.2.1,
+## site.one.4.3.0.2.1, site.three.6.3.0.2.1, site.three.7.3.0.2.1,
+## site.two.7.3.0.2.1, site.three.8.3.0.2.1, site.two.10.3.0.2.1,
+## site.two.1.4.0.2.1, site.one.3.4.0.2.1, site.two.4.4.0.2.1, site.one.5.4.0.2.1,
+## site.two.5.4.0.2.1, site.one.6.4.0.2.1, site.three.7.4.0.2.1,
+## site.one.8.4.0.2.1, site.one.1.5.0.2.1, site.two.1.5.0.2.1, site.one.2.5.0.2.1,
+## site.one.3.5.0.2.1, site.one.4.5.0.2.1, site.three.5.5.0.2.1,
+## site.two.5.5.0.2.1, site.three.7.5.0.2.1, site.two.7.5.0.2.1,
+## site.two.8.5.0.2.1, site.three.9.5.0.2.1, site.one.1.1.1.2.1,
+## site.two.5.1.1.2.1, site.one.6.1.1.2.1, site.one.7.1.1.2.1,
+## site.three.9.1.1.2.1, site.two.9.1.1.2.1, site.three.10.1.1.2.1,
+## site.one.1.2.1.2.1, site.two.1.2.1.2.1, site.two.2.2.1.2.1, site.two.3.2.1.2.1,
+## site.one.5.2.1.2.1, site.two.6.2.1.2.1, site.three.7.2.1.2.1,
+## site.two.8.2.1.2.1, site.three.10.2.1.2.1, site.two.10.2.1.2.1,
+## site.one.1.3.1.2.1, site.one.2.3.1.2.1, site.two.3.3.1.2.1,
+## site.one.4.3.1.2.1, site.two.4.3.1.2.1, site.one.6.3.1.2.1, site.two.7.3.1.2.1,
+## site.two.8.3.1.2.1, site.three.9.3.1.2.1, site.one.1.4.1.2.1,
+## site.one.2.4.1.2.1, site.two.2.4.1.2.1, site.two.3.4.1.2.1, site.one.5.4.1.2.1,
+## site.one.6.4.1.2.1, site.two.6.4.1.2.1, site.three.8.4.1.2.1,
+## site.three.9.4.1.2.1, site.two.10.4.1.2.1, site.two.3.5.1.2.1,
+## site.two.4.5.1.2.1, site.one.5.5.1.2.1, site.two.5.5.1.2.1, site.two.9.5.1.2.1,
+## site.two.10.5.1.2.1, site.two.2.1.0.3.1, site.two.3.1.0.3.1,
+## site.one.4.1.0.3.1, site.two.4.1.0.3.1, site.two.5.1.0.3.1, site.one.7.1.0.3.1,
+## site.three.7.1.0.3.1, site.two.9.1.0.3.1, site.two.1.2.0.3.1,
+## site.one.2.2.0.3.1, site.two.5.2.0.3.1, site.three.7.2.0.3.1,
+## site.two.7.2.0.3.1, site.two.9.2.0.3.1, site.two.1.3.0.3.1,
+## site.two.5.3.0.3.1, site.two.7.3.0.3.1, site.two.8.3.0.3.1, site.two.9.3.0.3.1,
+## site.two.2.4.0.3.1, site.one.3.4.0.3.1, site.two.4.4.0.3.1, site.one.8.4.0.3.1,
+## site.two.9.4.0.3.1, site.one.4.5.0.3.1, site.three.5.5.0.3.1,
+## site.three.6.5.0.3.1, site.one.8.5.0.3.1, site.three.8.5.0.3.1,
+## site.two.3.1.1.3.1, site.two.9.1.1.3.1, site.one.1.2.1.3.1, site.two.1.2.1.3.1,
+## site.two.3.2.1.3.1, site.three.5.2.1.3.1, site.three.8.2.1.3.1,
+## site.two.1.3.1.3.1, site.one.2.3.1.3.1, site.two.3.3.1.3.1, site.one.4.3.1.3.1,
+## site.two.4.3.1.3.1, site.three.5.3.1.3.1, site.two.5.3.1.3.1,
+## site.one.6.3.1.3.1, site.two.6.3.1.3.1, site.three.7.3.1.3.1,
+## site.two.8.3.1.3.1, site.two.9.3.1.3.1, site.one.1.4.1.3.1,
+## site.two.1.4.1.3.1, site.two.2.4.1.3.1, site.one.3.4.1.3.1, site.two.3.4.1.3.1,
+## site.one.4.4.1.3.1, site.one.5.4.1.3.1, site.one.6.4.1.3.1, site.two.6.4.1.3.1,
+## site.one.7.4.1.3.1, site.three.9.4.1.3.1, site.two.9.4.1.3.1,
+## site.one.1.5.1.3.1, site.one.4.5.1.3.1, site.two.4.5.1.3.1, site.one.5.5.1.3.1,
+## site.two.9.5.1.3.1, site.one.1.1.0.4.1, site.two.2.1.0.4.1, site.two.5.1.0.4.1,
+## site.three.6.1.0.4.1, site.three.9.1.0.4.1, site.two.10.1.0.4.1,
+## site.one.1.2.0.4.1, site.two.1.2.0.4.1, site.one.2.2.0.4.1, site.one.3.2.0.4.1,
+## site.two.3.2.0.4.1, site.two.4.2.0.4.1, site
+</code></pre></div></div>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="o">&lt;-</span><span class="kc">FALSE</span><span class="w">
+</span><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="p">[</span><span class="n">trainIndex</span><span class="p">]</span><span class="o">&lt;-</span><span class="kc">TRUE</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Testing:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">histbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"i in Whole Sample"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-1.png" alt=""><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">histbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="p">,])</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"i in Training"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-2.png" alt=""><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">histbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="o">!</span><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="p">,])</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"i in Test"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-3.png" alt=""><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">barbysite</span><span class="o">&lt;-</span><span class="k">function</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">xvar</span><span class="o">=</span><span class="s2">"i"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">ggplot</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">aes_string</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">xvar</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">geom_bar</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">facet_grid</span><span class="p">(</span><span class="o">~</span><span class="n">site</span><span class="p">)</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">barbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span><span class="s2">"age"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Age in Whole Sample"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-4.png" alt=""><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">barbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="p">,],</span><span class="s2">"age"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Age in Training"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-5.png" alt=""><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">barbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="o">!</span><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="p">,],</span><span class="s2">"age"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Age in Test"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-6.png" alt=""><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">barbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span><span class="s2">"missingdata"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"missingdata in Whole Sample"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-7.png" alt=""><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">barbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="p">,],</span><span class="s2">"missingdata"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"missingdata in Training"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-8.png" alt=""><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">barbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="o">!</span><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="p">,],</span><span class="s2">"missingdata"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"missingdata in Test"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-9.png" alt=""><!-- --></p>
+
+  </article>
+
+</div>
+
+    </div>
+
+    <!-- Footer -->    
+    <footer class="fixed-bottom">
+      <div class="container mt-0">
+        © Copyright 2024 Matthew  Peverill. Powered by <a href="https://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" target="_blank" rel="noopener noreferrer">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">GitHub Pages</a>.
+
+      </div>
+    </footer>
+
+    <!-- JavaScripts -->
+    <!-- jQuery -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+    <!-- Bootsrap & MDB scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.2/dist/umd/popper.min.js" integrity="sha256-l/1pMF/+J4TThfgARS6KwWrk/egwuVvhRzfLAMQ6Ds4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.min.js" integrity="sha256-SyTu6CwrfOhaznYZPoolVw2rxoY7lKYKQvqbtqN93HI=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/js/mdb.min.js" integrity="sha256-NdbiivsvWt7VYCt6hYNT3h/th9vSTL4EDWeGs5SN3DA=" crossorigin="anonymous"></script>
+
+    <!-- Masonry & imagesLoaded -->
+  <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+  <script defer src="/assets/js/masonry.js" type="text/javascript"></script>
+    
+  <!-- Medium Zoom JS -->
+  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js" integrity="sha256-EdPgYcPk/IIrw7FYeuJQexva49pVRZNmt3LculEr7zM=" crossorigin="anonymous"></script>
+  <script src="/assets/js/zoom.js"></script><!-- Load Common JS -->
+  <script src="/assets/js/common.js"></script>
+
+    <!-- MathJax -->
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        tags: 'ams'
+      }
+    };
+  </script>
+  <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js"></script>
+  <script defer src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-FZ5N8EW6J2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-FZ5N8EW6J2');
+  </script>
+  </body>
+</html>
+

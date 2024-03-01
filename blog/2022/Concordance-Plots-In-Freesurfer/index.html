@@ -2,16 +2,17 @@
 <html lang="en">
 
   <!-- Head -->
-  <head><meta http-equiv="refresh" content="3; url=https://matthewpeverill.com/" />    <!-- Metadata, OpenGraph and Schema.org -->
+  <head>    <!-- Metadata, OpenGraph and Schema.org -->
     
 
     <!-- Standard metadata -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Matthew  Peverill | Page not found</title>
+    <title>Matthew  Peverill | Concordance (Overlap) Plots in Freesurfer</title>
     <meta name="author" content="Matthew  Peverill" />
-    <meta name="description" content="Looks like there has been a mistake. Nothing exists here." />
+    <meta name="description" content="Clinical Scientist and  Psychologist in Training 
+" />
     <meta name="keywords" content="academic-website, portfolio-website, neuroscience, clinical-psychology" />
 
 
@@ -32,7 +33,7 @@
     <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
     
     <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="canonical" href="https://matthewpeverill.com/404.html">
+    <link rel="canonical" href="https://matthewpeverill.com/blog/2022/Concordance-Plots-In-Freesurfer/">
     
     <!-- Dark Mode -->
     
@@ -71,7 +72,7 @@
               </li>
               
               <!-- Blog -->
-              <li class="nav-item ">
+              <li class="nav-item active">
                 <a class="nav-link" href="/blog/">blog</a>
               </li>
 
@@ -101,20 +102,48 @@
 
     <!-- Content -->
     <div class="container mt-5">
-      <!-- page.html -->
-        <div class="post">
+      <!-- _layouts/post.html -->
 
-          <header class="post-header">
-            <h1 class="post-title">Page not found</h1>
-            <p class="post-description">Looks like there has been a mistake. Nothing exists here.</p>
-          </header>
+<div class="post">
 
-          <article>
-            <p>You will be redirected to the main page within 3 seconds. If not redirected, please click <a href="https://matthewpeverill.com/">here</a>.</p>
+  <header class="post-header">
+    <h1 class="post-title">Concordance (Overlap) Plots in Freesurfer</h1>
+    <p class="post-meta">January 17, 2022</p>
+    <p class="post-tags">
+      <a href="/blog/2022"> <i class="fas fa-calendar fa-sm"></i> 2022 </a>
 
-          </article>
+    </p>
+  </header>
 
-        </div>
+  <article class="post-content">
+    <p>Recently I had cause to create a concordance plot in Freesurfer: I had two overlay files from an analysis and I wanted to plot the significant regions in two colors with the overlapping area depicted in a third color. I found strikingly little documentation on how to do this outside of rumors in the FreeSurfer list serve, so I wanted to briefly document how I got it done. <a href="https://pysurfer.github.io/auto_examples/plot_fmri_conjunction.html#sphx-glr-auto-examples-plot-fmri-conjunction-py" target="_blank" rel="noopener noreferrer">PySurfer is a great tool to use to do this</a>, but I was unable to get its dependencies working in our analysis environment.</p>
+
+<p>As a spoiler, here is a picture of the output visualized using a version of my quadfigures script:</p>
+
+<p><img src="/assets/img/convergence_inflated_quadfigure.png" alt="Lateral and Medial, Right and Left view of a brain surface with 3 color maps overlayed"></p>
+
+<h1 id="how-to-make-the-figure">How to make the figure</h1>
+
+<p>The basic approach is as follows:</p>
+
+<ol>
+  <li>Using mri_binarize, make a mask of each of the overlays you want to depict. One should have masked voxels set to a value of 1, the other to 2.</li>
+  <li>Using fscalc, sum these in to a third overlay volume. Now you have a volume where each overlay and their convergence have a unique value.</li>
+  <li>Use mris_seg2annot, generate an overlay file from the combine volume as well using a color look up table you specify.</li>
+</ol>
+
+<p>Here is an example script:</p>
+
+<noscript><pre>400: Invalid request</pre></noscript>
+<script src="https://gist.github.com/e7ea405ce6bddd52f01ad8879034aab3.js"> </script>
+
+<p>I used a Cyan-Yellow-Magenta color scheme as it is <a href="https://www.ascb.org/science-news/how-to-make-scientific-figures-accessible-to-readers-with-color-blindness/" target="_blank" rel="noopener noreferrer">color-blind friendly</a>.</p>
+
+<p>Once the annotation file is generated, you can load it in freeview or tksurfer and work it in to a figure in whatever way you are used to. I use <a href="/blog/2018/freesurfer-snapshots-made-simpler/">my quadfigure script</a>.</p>
+
+  </article>
+
+</div>
 
     </div>
 

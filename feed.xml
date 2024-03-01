@@ -1,0 +1,1916 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://matthewpeverill.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://matthewpeverill.com/" rel="alternate" type="text/html" hreflang="en" /><updated>2024-03-01T09:27:47-06:00</updated><id>https://matthewpeverill.com/feed.xml</id><title type="html">blank</title><subtitle>Clinical Scientist and  Psychologist in Training 
+</subtitle><entry><title type="html">Keeping Participant IDs and other Sensitive Information off of Github.</title><link href="https://matthewpeverill.com/blog/2024/Keeping_Participant_IDs_off_Github/" rel="alternate" type="text/html" title="Keeping Participant IDs and other Sensitive Information off of Github." /><published>2024-01-26T04:00:00-06:00</published><updated>2024-01-26T04:00:00-06:00</updated><id>https://matthewpeverill.com/blog/2024/Keeping_Participant_IDs_off_Github</id><content type="html" xml:base="https://matthewpeverill.com/blog/2024/Keeping_Participant_IDs_off_Github/"><![CDATA[<p>Research participant IDs can be considered sensitive research data. Unfortunately, it’s easy for them to creep into code bases. In my own workflows, they can get added to script comments, show up unintended in tables, or even display in warning messages in rmarkdown documents. Github makes it easy to publish research code, but that also means that it’s easy to inadvertently share something you ought not to. Although it’s possible to <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository">remove sensitive data from Github histories</a> using tools like <a href="https://github.com/newren/git-filter-repo">git-filter-repo</a>, it’s extremely time consuming. More importantly, once the data has been posted it’s always possible that someone saved it. It’s better to avoid posting information in the first place.</p>
+
+<h2 id="using-git-hooks-to-check-for-sensitive-information">Using Git Hooks to Check for Sensitive Information</h2>
+<p>Git (not github) has an underlying ability to run code when certain events happen. The system is extremely powerful, but the type of hook I want to focus on is called a pre-commit hook. This is a script that runs before you commit a repository. If the script errors out, the commit doesn’t proceed. Because you have to commit your changes locally before pushing them to github, one use for this is to check our repository for data we’d rather not post. If anything is detected, the script can abort the commit and prevent you from pushing it. Here’s an example script which will check a repository for NDA id’s (like those used in ABCD) prior to allowing a commit:</p>
+
+<noscript><pre>400: Invalid request</pre></noscript>
+<script src="https://gist.github.com/7b76b57de2f8dc19b926119a8f1166e0.js"> </script>
+
+<p>If you write this script to .git/hooks/pre-commit (the name is important) and make it executable, if you try to make a commit containing an NDA id in either a pdf file or plaintext document you will get a message like this one:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Error: grep found sensitive data (pattern: NDAR_INV[0-9A-Z]{8})
+Aborting Commit
+</code></pre></div></div>
+
+<p>The script uses grep and pdfgrep (a separate application) to work. I’m not sure if it would work on Windows (let me know if it does).</p>]]></content><author><name></name></author><summary type="html"><![CDATA[Research participant IDs can be considered sensitive research data. Unfortunately, it’s easy for them to creep into code bases. In my own workflows, they can get added to script comments, show up unintended in tables, or even display in warning messages in rmarkdown documents. Github makes it easy to publish research code, but that also means that it’s easy to inadvertently share something you ought not to. Although it’s possible to remove sensitive data from Github histories using tools like git-filter-repo, it’s extremely time consuming. More importantly, once the data has been posted it’s always possible that someone saved it. It’s better to avoid posting information in the first place.]]></summary></entry><entry><title type="html">Neuroimaging Data Compression Part 2: Compression in the real world.</title><link href="https://matthewpeverill.com/blog/2023/NeuroCompressionComparison_p2/" rel="alternate" type="text/html" title="Neuroimaging Data Compression Part 2: Compression in the real world." /><published>2023-05-16T00:00:00-05:00</published><updated>2023-05-16T00:00:00-05:00</updated><id>https://matthewpeverill.com/blog/2023/NeuroCompressionComparison_p2</id><content type="html" xml:base="https://matthewpeverill.com/blog/2023/NeuroCompressionComparison_p2/"><![CDATA[<p>In a previous episode, we ran benchmarks on a variety of compression
+algorithms on a single nifti formatted neuroimaging file. The benchmarks
+we used did i/o from and to RAM, so as to allow better ‘theoretical’
+comparisons of different compression algorithms. We decided that, while
+blosc and flzma2 got the best results, lzma2 is a commonly available
+option which realizes most of their gains over gzip.</p>
+
+<p>Since that post went live, I’ve been working a lot with lzma2 (via tar
+with the -J option to use .tar.xz), and the performance is not quite
+what I’ve wanted. The compression ratios are just ok, and it takes a
+long time to compress (and doesn’t seem to use multicore). This may be
+because of limitations of the disk, or it could be because I’m
+compressing more than just one file at a time. It could also be because
+I’m not passing the right options to xz. So I wanted to run another
+round of comparisons. This time, I want to just run benchmarks in our
+analyis environment, using commonly available tools, and measuring
+performance of actual bash commands. I’m only going to evaluate gzip and
+lzma2 via xz (bzip2 is antiquated and the rest aren’t easily available.
+But there are a few other things I want to iterate over:</p>
+
+<p><em>Sorting</em>: I want to test a variety of sorting methods. In theory, we
+might get better compression if files that have similar patterns of data
+(e.g., event files) are compressed sequentially instead of interspersed
+amongst other types of files (e.g., images). This is controlled by the
+tar command, which globs all the files together before they are
+compressed. If the order is different, you can get different results –
+this can create differences in file size created by, for example,
+<a href="https://superuser.com/questions/1633073/why-are-tar-xz-files-15x-smaller-when-using-pythons-tar-library-compared-to-mac">different versions of
+tar</a>.
+Here are the different methods: * System: the default, just compress
+things in the order the system lists them. This may differ across run
+and system type. * Name: Sort alphabetically by name * Inode: Sort by
+position of the file on disk * Reverse: Reverse the filename like you
+were making a palindrome, then sort alphabetically by that list.
+Effectively, this sorts by file type given the file extensions present
+in BIDS. Tar can’t do this natively, you have to use a filelist, like
+so:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>echo "Making a reverse filelist"
+find $TARGET_DIRECTORY -type f &gt; tmp/filelist
+rev tmp/filelist | sort | rev &gt; tmp/revfilelist
+test_comp "gtar.rv.gz" "tar -czf $testarch -T tmp/revfilelist"
+</code></pre></div></div>
+
+<p><em>Threading</em>: I want to test single threaded and 8 thread compression
+performance for xz. I might add a 4 core test later if that ends up
+being what we need.</p>
+
+<p><em>Block Size</em>: The way multithreading works in xz is that the file is
+split in to blocks, which are divied up among the processors. I read <a href="https://yeah.nah.nz/misc/xz-thread/">a
+blog post suggesting that changing the size of these blocks could
+optimize multithreading</a>, which is
+attractive because I haven’t seen large performance differences from
+increasing the number of processors available to XZ.</p>
+
+<h1 id="conclusions--tl-dr">Conclusions / tl; dr:</h1>
+
+<ul>
+  <li>
+    <p>You <em>can</em> greatly accelerate tar.xz compression to something similar
+to what gzip can provide by using multithreading. However, with
+smaller datasets/sets of smaller files, you will need to tweak the
+block size parameter to realize full benefits.</p>
+  </li>
+  <li>
+    <p>You can improve your compression ratio and compression time a bit by
+controlling the order in which tar compresses files. The ideal way is
+by processing files in alphabetical order of the reversed lines. If
+you want something less cumbersome, simply passing –sort=“name” to
+your tar command will work almost as well. The improvements here are
+much smaller than what you get by using multithreading.</p>
+  </li>
+</ul>
+
+<p>Here are some commands:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>export XZ_OPT="-T8 --block-size=10486760"
+tar --sort=name -cJf example.tar.gz target_dir
+</code></pre></div></div>
+
+<p>The best part of these optimizations is that they are not using exotic
+software: tar and xz are commonly installed on Linux and Mac systems.
+The flags I’m proposing do not in any way complicate decompression – a
+normal tar -xJf command will work equally well regardless of the options
+used to compress the file originally.</p>
+
+<h1 id="generating-the-benchmarks">Generating the benchmarks.</h1>
+
+<p>I used an HTCondor job to compress the same set of files using 17
+different methods. I did this once for a set of QC reports output by
+fmriprep (mostly as a pilot), and again using BIDS formatted raw data
+for one participant from the ABCD dataset. Finally, I ran the benchmarks
+for a full set of fmriprep outputs from one ABCD participant. I run the
+benchmarks 20 times to account for variability across run conditions.
+You can see the full script I used to do this <a href="https://gist.github.com/mrpeverill/645cd9a646119eb05544340e0418af01">on
+github</a>,
+but the key part of the command is the usage of time to get processing
+time for each compression command:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Outputs: realSeconds \t peakMem \t CPUperc
+/usr/bin/time -f '%e \t %M \t %P' -ao tmp/timeout.txt
+</code></pre></div></div>
+
+<p>Here are a few lines from an example data file:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Mlabel</th>
+      <th style="text-align: center">realSeconds</th>
+      <th style="text-align: center">peakMem</th>
+      <th style="text-align: center">CPUperc</th>
+      <th style="text-align: center">Ratio</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">gtar.df.ra</td>
+      <td style="text-align: center">1.89</td>
+      <td style="text-align: center">3168</td>
+      <td style="text-align: center">16</td>
+      <td style="text-align: center">1</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">gtar.df.gz</td>
+      <td style="text-align: center">4.70</td>
+      <td style="text-align: center">3172</td>
+      <td style="text-align: center">97</td>
+      <td style="text-align: center">0.537</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">gtar.in.gz</td>
+      <td style="text-align: center">4.65</td>
+      <td style="text-align: center">3192</td>
+      <td style="text-align: center">97</td>
+      <td style="text-align: center">0.5371</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">gtar.nm.gz</td>
+      <td style="text-align: center">4.62</td>
+      <td style="text-align: center">3160</td>
+      <td style="text-align: center">98</td>
+      <td style="text-align: center">0.537</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">gtar.rv.gz</td>
+      <td style="text-align: center">4.59</td>
+      <td style="text-align: center">3092</td>
+      <td style="text-align: center">98</td>
+      <td style="text-align: center">0.5371</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">gtar.df.xz</td>
+      <td style="text-align: center">57.17</td>
+      <td style="text-align: center">97292</td>
+      <td style="text-align: center">97</td>
+      <td style="text-align: center">0.431</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="inputs-files">Inputs files</h1>
+
+<p>This dataset includes 4.3 GB of input files for one participant. This
+includes images in nifti format and some event files and supporting text
+documents.</p>
+
+<p>I’ve omitted error bars when they are unhelpful. One interesting note is
+that some variability in compression occurs if you let the system sort
+the files for tar.</p>
+
+<p><img src="/assets/img/NeuroCompressionComparison.p2/unnamed-chunk-4-1.png" alt="" /><!-- --></p>
+
+<p>Multicore is very unambiguously helpful here. setting the block size
+helps a bit more. Let’s zoom in on the multicore xz options:</p>
+
+<p><img src="/assets/img/NeuroCompressionComparison.p2/unnamed-chunk-5-1.png" alt="" /><!-- --></p>
+
+<p>There is too much error to make firm conclusions about speed advantages.
+The ‘reverse’ sorting method is marginally better at compressing the
+data, but not by much. xz-10MiB still appears to be the best method.</p>
+
+<p><img src="/assets/img/NeuroCompressionComparison.p2/unnamed-chunk-6-1.png" alt="" /><!-- --></p>
+
+<p>This explains why xz is so much faster with 10MiB blocks: it is doing a
+much better job using the 8 cores we provide for it.</p>
+
+<p><img src="/assets/img/NeuroCompressionComparison.p2/unnamed-chunk-7-1.png" alt="" /><!-- --></p>
+
+<h1 id="fmriprep-output">fmriprep output</h1>
+
+<p>19 GB of output files including images in nifti format, CIFTI files,
+json, etc.</p>
+
+<p><img src="/assets/img/NeuroCompressionComparison.p2/unnamed-chunk-9-1.png" alt="" /><!-- --></p>
+
+<p>There’s a lot of variability in the timing, but xz-10MiB is marginally
+faster. Name sorted xz has the best compression, but there is actually
+very little compression available – possibly the outputs are already
+well compressed.</p>
+
+<p><img src="/assets/img/NeuroCompressionComparison.p2/unnamed-chunk-10-1.png" alt="" /><!-- --></p>
+
+<p>With so much data, we can use all of our processors regardless of block
+size, which explains why we don’t see much difference here.</p>
+
+<p><img src="/assets/img/NeuroCompressionComparison.p2/unnamed-chunk-11-1.png" alt="" /><!-- --></p>
+
+<h1 id="qc-data-performance">QC data performance</h1>
+
+<p>This data file consists of 74 MB of mostly text: svg and html files
+composing a QC report for a typical subject.</p>
+
+<p><img src="/assets/img/NeuroCompressionComparison.p2/unnamed-chunk-13-1.png" alt="" /><!-- --></p>
+
+<p>A couple of observations:</p>
+
+<ul>
+  <li>XZ compression ratio does not depend very much on sorting or cores
+used. There might be a tiny loss of compression in the 10MiB, which is
+consistent with findings from the blog post linked above</li>
+  <li>Reverse sorting the filenames before we compress them does give us a
+fraction of a percentage point more compression. After that, inode is
+a the second best.</li>
+</ul>
+
+<p><img src="/assets/img/NeuroCompressionComparison.p2/unnamed-chunk-14-1.png" alt="" /><!-- --></p>
+
+<p>This explains why xz is so much faster with 10MiB blocks: it is doing a
+much better job using the 8 cores we provide for it.</p>
+
+<p><img src="/assets/img/NeuroCompressionComparison.p2/unnamed-chunk-15-1.png" alt="" /><!-- --></p>
+
+<p>Again, the 10MiB jobs use more memory to get it done faster.</p>]]></content><author><name>Matthew Peverill</name></author><summary type="html"><![CDATA[In a previous episode, we ran benchmarks on a variety of compression algorithms on a single nifti formatted neuroimaging file. The benchmarks we used did i/o from and to RAM, so as to allow better ‘theoretical’ comparisons of different compression algorithms. We decided that, while blosc and flzma2 got the best results, lzma2 is a commonly available option which realizes most of their gains over gzip.]]></summary></entry><entry><title type="html">Efficiently plotting very large datasets with concatenated hex plots</title><link href="https://matthewpeverill.com/blog/2023/ConcatenatingHexPlots/" rel="alternate" type="text/html" title="Efficiently plotting very large datasets with concatenated hex plots" /><published>2023-03-17T00:00:00-05:00</published><updated>2023-03-17T00:00:00-05:00</updated><id>https://matthewpeverill.com/blog/2023/ConcatenatingHexPlots</id><content type="html" xml:base="https://matthewpeverill.com/blog/2023/ConcatenatingHexPlots/"><![CDATA[<p>For my current project, I need to generate 5 plots, each of which
+contain approximately 1.5 billion datapoints. I haven’t tried, but that
+is likely to seriously cramp my laptops style. The data points are
+divided amongst 12,000 participants. Since these will get plotted as a
+hex-mapped density plot anyway, I want to generate hex plot information
+for each subject individually and then effectively stack them in a
+memory efficient way. As an added complication, I want to plot a best
+fit line over the graph.</p>
+
+<h1 id="generate-data-and-example-plots">Generate Data and example plots</h1>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">N</span><span class="o">=</span><span class="m">10000</span><span class="w">
+</span><span class="n">x1</span><span class="o">&lt;-</span><span class="n">rpert</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">4</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="m">5</span><span class="p">)</span><span class="w">
+</span><span class="n">y1</span><span class="o">&lt;-</span><span class="n">rpert</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">8</span><span class="p">,</span><span class="m">10</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="m">5</span><span class="p">)</span><span class="w">
+</span><span class="n">x2</span><span class="o">&lt;-</span><span class="n">rpert</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="m">6</span><span class="p">,</span><span class="m">8</span><span class="p">,</span><span class="m">10</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="m">5</span><span class="p">)</span><span class="w">
+</span><span class="n">y2</span><span class="o">&lt;-</span><span class="n">rpert</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">8</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="m">5</span><span class="p">)</span><span class="w">
+</span><span class="n">x3</span><span class="o">&lt;-</span><span class="n">rpert</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">5</span><span class="p">,</span><span class="m">10</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="m">5</span><span class="p">)</span><span class="w">
+</span><span class="n">y3</span><span class="o">&lt;-</span><span class="n">rpert</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">5</span><span class="p">,</span><span class="m">10</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="m">5</span><span class="p">)</span><span class="w">
+</span><span class="n">xc</span><span class="o">&lt;-</span><span class="nf">c</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span><span class="n">x3</span><span class="p">)</span><span class="w">
+</span><span class="n">yc</span><span class="o">&lt;-</span><span class="nf">c</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span><span class="n">y3</span><span class="p">)</span><span class="w">
+
+</span><span class="n">h1</span><span class="o">&lt;-</span><span class="n">hexbin</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span><span class="n">y1</span><span class="p">,</span><span class="n">xbnds</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">),</span><span class="n">ybnds</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">),</span><span class="n">xbins</span><span class="o">=</span><span class="m">100</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="m">.75</span><span class="p">)</span><span class="w">
+</span><span class="n">h2</span><span class="o">&lt;-</span><span class="n">hexbin</span><span class="p">(</span><span class="n">x2</span><span class="p">,</span><span class="n">y2</span><span class="p">,</span><span class="n">xbnds</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">),</span><span class="n">ybnds</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">),</span><span class="n">xbins</span><span class="o">=</span><span class="m">100</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="m">.75</span><span class="p">)</span><span class="w">
+</span><span class="n">h3</span><span class="o">&lt;-</span><span class="n">hexbin</span><span class="p">(</span><span class="n">x3</span><span class="p">,</span><span class="n">y3</span><span class="p">,</span><span class="n">xbnds</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">),</span><span class="n">ybnds</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">),</span><span class="n">xbins</span><span class="o">=</span><span class="m">100</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="m">.75</span><span class="p">)</span><span class="w">
+</span><span class="n">hc</span><span class="o">&lt;-</span><span class="n">hexbin</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="n">yc</span><span class="p">,</span><span class="n">xbnds</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">),</span><span class="n">ybnds</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">),</span><span class="n">xbins</span><span class="o">=</span><span class="m">100</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="m">.75</span><span class="p">)</span><span class="w">
+
+</span><span class="n">plot</span><span class="p">(</span><span class="n">h1</span><span class="p">,</span><span class="n">main</span><span class="o">=</span><span class="s2">"h1"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/ConcatenateHexPlots/unnamed-chunk-1-1.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plot</span><span class="p">(</span><span class="n">h2</span><span class="p">,</span><span class="n">main</span><span class="o">=</span><span class="s2">"h2"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/ConcatenateHexPlots/unnamed-chunk-1-2.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plot</span><span class="p">(</span><span class="n">h3</span><span class="p">,</span><span class="n">main</span><span class="o">=</span><span class="s2">"h3"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/ConcatenateHexPlots/unnamed-chunk-1-3.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plot</span><span class="p">(</span><span class="n">hc</span><span class="p">,</span><span class="n">main</span><span class="o">=</span><span class="s2">"h1 and h3"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/ConcatenateHexPlots/unnamed-chunk-1-4.png" alt="" /><!-- --></p>
+
+<h1 id="the-goal">The goal</h1>
+
+<p>What we want to do is combine the hexbins without storing the entire
+vector in memory.</p>
+
+<p>The hexbin object seems to store cell ids and weights separately, which
+is great for us. On disk, the hex object is 4.3152^{4} bytes, whereas
+the original vectors were 1.60096^{5} bytes. So the hexbin object does
+not store the original data.</p>
+
+<p>However:</p>
+
+<ol>
+  <li>There is no c or ‘+’ method for hexbin. I could not get the
+list2hexList function to plot (and it saves too much data anyway).</li>
+  <li>It’s not clear how the cell ids are mapped to coordinates.</li>
+</ol>
+
+<p>Given the bounding arguments we’re providing, the hexbin objects have
+the same grid dimensions, but different numbers of cells:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">c</span><span class="p">(</span><span class="n">h1</span><span class="p">,</span><span class="n">h2</span><span class="p">,</span><span class="n">h3</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## [[1]]
+## 'hexbin' object from call: hexbin(x = x1, y = y1, xbins = 100, shape = 0.75, xbnds = c(0,      10), ybnds = c(0, 10)) 
+## n = 10000  points in nc = 1593  hexagon cells in grid dimensions  88 by 101 
+## 
+## [[2]]
+## 'hexbin' object from call: hexbin(x = x2, y = y2, xbins = 100, shape = 0.75, xbnds = c(0,      10), ybnds = c(0, 10)) 
+## n = 10000  points in nc = 1619  hexagon cells in grid dimensions  88 by 101 
+## 
+## [[3]]
+## 'hexbin' object from call: hexbin(x = x3, y = y3, xbins = 100, shape = 0.75, xbnds = c(0,      10), ybnds = c(0, 10)) 
+## n = 10000  points in nc = 3988  hexagon cells in grid dimensions  88 by 101
+</code></pre></div></div>
+
+<p>It appears that the cell id’s are mapped to the grid. You can tell by
+making a table of overlapping cell id’s from the above hexbin objects:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#How much overlap?</span><span class="w">
+</span><span class="n">celllist</span><span class="o">&lt;-</span><span class="nf">list</span><span class="p">(</span><span class="n">h1</span><span class="o">@</span><span class="n">cell</span><span class="p">,</span><span class="n">h2</span><span class="o">@</span><span class="n">cell</span><span class="p">,</span><span class="n">h3</span><span class="o">@</span><span class="n">cell</span><span class="p">)</span><span class="w">
+</span><span class="n">outer</span><span class="p">(</span><span class="n">celllist</span><span class="p">,</span><span class="n">celllist</span><span class="p">,</span><span class="n">Vectorize</span><span class="p">(</span><span class="err">\</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span><span class="w"> </span><span class="nf">sum</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">y</span><span class="p">)))</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>##      [,1] [,2] [,3]
+## [1,] 1593    0  731
+## [2,]    0 1619  758
+## [3,]  731  758 3988
+</code></pre></div></div>
+
+<p>h1 and h2 have no shared cell id’s – but h3 overlaps with both 1 and 2.
+This is JUST what we would expect if the cell ids line up with a
+particular coordinate. Next question – do overlapping cells have the
+same cell id?</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#find 5 cells which overlap between h2 and h3</span><span class="w">
+</span><span class="n">tcells</span><span class="o">&lt;-</span><span class="n">h2</span><span class="o">@</span><span class="n">cell</span><span class="p">[</span><span class="n">which</span><span class="p">(</span><span class="n">h2</span><span class="o">@</span><span class="n">cell</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">h3</span><span class="o">@</span><span class="n">cell</span><span class="p">)[</span><span class="m">1</span><span class="o">:</span><span class="m">5</span><span class="p">]]</span><span class="w">
+</span><span class="n">h2xy</span><span class="o">&lt;-</span><span class="n">hcell2xy</span><span class="p">(</span><span class="n">h2</span><span class="p">)</span><span class="w">
+</span><span class="n">h3xy</span><span class="o">&lt;-</span><span class="n">hcell2xy</span><span class="p">(</span><span class="n">h3</span><span class="p">)</span><span class="w">
+
+</span><span class="n">data.frame</span><span class="p">(</span><span class="n">h2cellid</span><span class="o">=</span><span class="n">h2</span><span class="o">@</span><span class="n">cell</span><span class="p">[</span><span class="n">h2</span><span class="o">@</span><span class="n">cell</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">tcells</span><span class="p">],</span><span class="w">
+           </span><span class="n">h3cellid</span><span class="o">=</span><span class="n">h3</span><span class="o">@</span><span class="n">cell</span><span class="p">[</span><span class="n">h3</span><span class="o">@</span><span class="n">cell</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">tcells</span><span class="p">],</span><span class="w">
+           </span><span class="n">x2</span><span class="o">=</span><span class="n">h2xy</span><span class="o">$</span><span class="n">x</span><span class="p">[</span><span class="n">h2</span><span class="o">@</span><span class="n">cell</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">tcells</span><span class="p">],</span><span class="w">
+           </span><span class="n">x3</span><span class="o">=</span><span class="n">h3xy</span><span class="o">$</span><span class="n">x</span><span class="p">[</span><span class="n">h3</span><span class="o">@</span><span class="n">cell</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">tcells</span><span class="p">],</span><span class="w">
+           </span><span class="n">y2</span><span class="o">=</span><span class="n">h2xy</span><span class="o">$</span><span class="n">y</span><span class="p">[</span><span class="n">h2</span><span class="o">@</span><span class="n">cell</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">tcells</span><span class="p">],</span><span class="w">
+           </span><span class="n">y3</span><span class="o">=</span><span class="n">h3xy</span><span class="o">$</span><span class="n">y</span><span class="p">[</span><span class="n">h3</span><span class="o">@</span><span class="n">cell</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">tcells</span><span class="p">])</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>##   h2cellid h3cellid   x2   x3        y2        y3
+## 1      473      473 6.80 6.80 0.4618802 0.4618802
+## 2      579      579 7.35 7.35 0.5773503 0.5773503
+## 3      673      673 6.60 6.60 0.6928203 0.6928203
+## 4      772      772 6.45 6.45 0.8082904 0.8082904
+## 5      776      776 6.85 6.85 0.8082904 0.8082904
+</code></pre></div></div>
+
+<p>Cell ids map to specific points on an integer grid defining the possible
+hexes. Now we can make our function by simply merging the slots in the
+hexbin object on cell id. To be extra careful, we will use the hcell2xy
+function to extract the x and y coordinates of each cell. We will use
+weighted averaging to re-calculate the x and y center of mass which is
+embedded, per cell, in the hexbin object.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Get elements from s4 object by name</span><span class="w">
+</span><span class="n">get_slots</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="k">function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">nm</span><span class="p">)</span><span class="w"> </span><span class="n">Map</span><span class="p">(</span><span class="err">\</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="n">getElement</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">),</span><span class="w"> </span><span class="n">nm</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># Unpack hexbin data to be merged in to a dataframe</span><span class="w">
+</span><span class="c1"># Strictly speaking we don't need the xy coordinates, but it is a good error</span><span class="w">
+</span><span class="c1"># check if we have the computation time available.</span><span class="w">
+</span><span class="n">unpack_hexbin</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="k">function</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">cols</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s2">"cell"</span><span class="p">,</span><span class="w"> </span><span class="s2">"count"</span><span class="p">,</span><span class="w"> </span><span class="s2">"xcm"</span><span class="p">,</span><span class="w"> </span><span class="s2">"ycm"</span><span class="p">)</span><span class="w">
+  </span><span class="nf">return</span><span class="p">(</span><span class="n">cbind</span><span class="p">(</span><span class="n">data.frame</span><span class="p">(</span><span class="n">get_slots</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">cols</span><span class="p">)),</span><span class="w">
+                 </span><span class="n">hcell2xy</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="c1"># Get columns from a dataframe that should not vary between hexbins to be </span><span class="w">
+</span><span class="c1"># merged.</span><span class="w">
+</span><span class="n">getmeta_hexbin</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="k">function</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">varying</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="s2">"cell"</span><span class="p">,</span><span class="w"> </span><span class="s2">"count"</span><span class="p">,</span><span class="w"> </span><span class="s2">"xcm"</span><span class="p">,</span><span class="w"> </span><span class="s2">"ycm"</span><span class="p">,</span><span class="w"> </span><span class="s2">"call"</span><span class="p">,</span><span class="w"> </span><span class="s2">"n"</span><span class="p">,</span><span class="w"> </span><span class="s2">"ncells"</span><span class="p">)</span><span class="w">
+  </span><span class="n">other_slots</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">setdiff</span><span class="p">(</span><span class="n">slotNames</span><span class="p">(</span><span class="n">x</span><span class="p">),</span><span class="w"> </span><span class="n">varying</span><span class="p">)</span><span class="w">
+  </span><span class="n">get_slots</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">other_slots</span><span class="p">)</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="c1"># Center of mass calculation for two points, robust to missing data. </span><span class="w">
+</span><span class="n">cm</span><span class="o">&lt;-</span><span class="k">function</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="p">,</span><span class="n">x1w</span><span class="p">,</span><span class="n">x2w</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">i</span><span class="o">&lt;-</span><span class="n">x1</span><span class="o">*</span><span class="n">x1w</span><span class="w">
+  </span><span class="n">j</span><span class="o">&lt;-</span><span class="n">x2</span><span class="o">*</span><span class="n">x2w</span><span class="w">
+  </span><span class="n">w</span><span class="o">&lt;-</span><span class="nf">sum</span><span class="p">(</span><span class="n">x1w</span><span class="p">,</span><span class="n">x2w</span><span class="p">,</span><span class="n">na.rm</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span><span class="w">
+  </span><span class="nf">return</span><span class="p">(</span><span class="nf">sum</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">na.rm</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span><span class="o">/</span><span class="n">w</span><span class="p">)</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">combine_hexbin</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="k">function</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">hm</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">merge</span><span class="p">(</span><span class="n">unpack_hexbin</span><span class="p">(</span><span class="n">a</span><span class="p">),</span><span class="w"> 
+                </span><span class="n">unpack_hexbin</span><span class="p">(</span><span class="n">b</span><span class="p">),</span><span class="w"> 
+                </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s2">"cell"</span><span class="p">,</span><span class="s2">"x"</span><span class="p">,</span><span class="s2">"y"</span><span class="p">),</span><span class="w"> 
+                </span><span class="n">all</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span><span class="w">
+    </span><span class="k">if</span><span class="p">(</span><span class="nf">any</span><span class="p">(</span><span class="n">duplicated</span><span class="p">(</span><span class="n">hm</span><span class="o">$</span><span class="n">cell</span><span class="p">)))</span><span class="w"> </span><span class="n">stop</span><span class="p">(</span><span class="s2">"Duplicate cell Id's detected: Do the hexbin objects have the same grid?"</span><span class="p">)</span><span class="w">
+    </span><span class="n">hm2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">hm</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span><span class="n">rowwise</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span><span class="n">mutate</span><span class="p">(</span><span class="w">
+      </span><span class="n">count</span><span class="o">=</span><span class="nf">sum</span><span class="p">(</span><span class="n">count.x</span><span class="p">,</span><span class="n">count.y</span><span class="p">,</span><span class="n">na.rm</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">),</span><span class="w">
+      </span><span class="n">xcm</span><span class="o">=</span><span class="n">cm</span><span class="p">(</span><span class="n">xcm.x</span><span class="p">,</span><span class="n">xcm.y</span><span class="p">,</span><span class="n">count.x</span><span class="p">,</span><span class="n">count.y</span><span class="p">),</span><span class="w">
+      </span><span class="n">ycm</span><span class="o">=</span><span class="n">cm</span><span class="p">(</span><span class="n">ycm.x</span><span class="p">,</span><span class="n">ycm.y</span><span class="p">,</span><span class="n">count.x</span><span class="p">,</span><span class="n">count.y</span><span class="p">)</span><span class="w">
+    </span><span class="p">)</span><span class="w">
+    </span><span class="n">do.call</span><span class="p">(</span><span class="n">new</span><span class="p">,</span><span class="w">
+            </span><span class="nf">c</span><span class="p">(</span><span class="nf">list</span><span class="p">(</span><span class="s2">"hexbin"</span><span class="p">),</span><span class="w">
+              </span><span class="n">as.list</span><span class="p">(</span><span class="n">hm2</span><span class="p">[,</span><span class="nf">c</span><span class="p">(</span><span class="s2">"cell"</span><span class="p">,</span><span class="w">
+                             </span><span class="s2">"count"</span><span class="p">,</span><span class="w">
+                             </span><span class="s2">"xcm"</span><span class="p">,</span><span class="w">
+                             </span><span class="s2">"ycm"</span><span class="p">)]),</span><span class="w">
+              </span><span class="nf">list</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">sum</span><span class="p">(</span><span class="n">hm2</span><span class="o">$</span><span class="n">count</span><span class="p">),</span><span class="w">
+                   </span><span class="n">ncells</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">length</span><span class="p">(</span><span class="n">hm2</span><span class="p">)),</span><span class="w">
+              </span><span class="n">getmeta_hexbin</span><span class="p">(</span><span class="n">a</span><span class="p">),</span><span class="w">
+              </span><span class="n">call</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">quote</span><span class="p">(</span><span class="nf">call</span><span class="p">(</span><span class="s2">"merged hexbin"</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">))</span><span class="w">
+            </span><span class="p">))</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">plot</span><span class="p">(</span><span class="n">combine_hexbin</span><span class="p">(</span><span class="n">h1</span><span class="p">,</span><span class="n">h2</span><span class="p">))</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/ConcatenateHexPlots/unnamed-chunk-5-1.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plot</span><span class="p">(</span><span class="n">combine_hexbin</span><span class="p">(</span><span class="n">h2</span><span class="p">,</span><span class="n">h3</span><span class="p">))</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/ConcatenateHexPlots/unnamed-chunk-5-2.png" alt="" /><!-- --></p>
+
+<p>Great – what if we want to plot the resulting object in ggplot instead
+of base r plotting?</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># from https://stackoverflow.com/questions/41903657/ggplot-hexbin-shows-different-number-of-hexagons-in-plot-versus-data-frame</span><span class="w">
+</span><span class="n">stacked_hexbin</span><span class="o">&lt;-</span><span class="n">combine_hexbin</span><span class="p">(</span><span class="n">h2</span><span class="p">,</span><span class="n">h3</span><span class="p">)</span><span class="w">
+</span><span class="n">hexdf</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">data.frame</span><span class="w"> </span><span class="p">(</span><span class="n">hcell2xy</span><span class="p">(</span><span class="n">stacked_hexbin</span><span class="p">),</span><span class="w">  
+                     </span><span class="n">hexID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stacked_hexbin</span><span class="o">@</span><span class="n">cell</span><span class="p">,</span><span class="w"> 
+                     </span><span class="n">counts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stacked_hexbin</span><span class="o">@</span><span class="n">count</span><span class="p">)</span><span class="w">
+
+</span><span class="n">ggplot</span><span class="p">(</span><span class="n">hexdf</span><span class="p">,</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span><span class="n">fill</span><span class="o">=</span><span class="n">counts</span><span class="p">,</span><span class="n">hexID</span><span class="o">=</span><span class="n">hexID</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">geom_hex</span><span class="w"> </span><span class="p">(</span><span class="n">stat</span><span class="o">=</span><span class="s2">"identity"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/ConcatenateHexPlots/unnamed-chunk-6-1.png" alt="" /><!-- --></p>]]></content><author><name>Matthew Peverill</name></author><summary type="html"><![CDATA[For my current project, I need to generate 5 plots, each of which contain approximately 1.5 billion datapoints. I haven’t tried, but that is likely to seriously cramp my laptops style. The data points are divided amongst 12,000 participants. Since these will get plotted as a hex-mapped density plot anyway, I want to generate hex plot information for each subject individually and then effectively stack them in a memory efficient way. As an added complication, I want to plot a best fit line over the graph.]]></summary></entry><entry><title type="html">Comparison of Compression Methods for Neuroimaging Data.</title><link href="https://matthewpeverill.com/blog/2022/NeuroCompressionComparison/" rel="alternate" type="text/html" title="Comparison of Compression Methods for Neuroimaging Data." /><published>2022-12-19T00:00:00-06:00</published><updated>2022-12-19T00:00:00-06:00</updated><id>https://matthewpeverill.com/blog/2022/NeuroCompressionComparison</id><content type="html" xml:base="https://matthewpeverill.com/blog/2022/NeuroCompressionComparison/"><![CDATA[<p>We are working on a pre-processing pipeline for a large neuroimaging
+dataset, and we want to be sure we are being judicious with our disk
+space usage. .nii Files are, conventionally, compressed with the program
+gzip (sometimes wrapped around a tape archive or tar file). Gzip is
+ubiquitously available, has a low memory footprint, and does an ok job.
+However, there are other perfectly mature, lossless compression formats
+available which get better results. If you are working with &gt;100TB of
+data, this could matter a lot to your operating costs. Since compression
+performance is dependent on the type of data you had, I wanted to
+compare the efficiency of a number of algorithms and see what our
+options were.</p>
+
+<h1 id="algorithms-we-are-comparing">Algorithms we are comparing.</h1>
+
+<p>Gzip and memcpy are included for comparison. Other compression tools
+were chosen based on their apparent popularity (from other compression
+tests published online or because of their inclusion in turbobench’s
+‘standard lineups’) and to give a good range of datapoints from fast,
+minimally compressed to slow, highly compressed:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">method</th>
+      <th style="text-align: center">level</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">brotli</td>
+      <td style="text-align: center">4</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">brotli</td>
+      <td style="text-align: center">5</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">bzip2</td>
+      <td style="text-align: center">N/A</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">flzma2</td>
+      <td style="text-align: center">5</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">flzma2</td>
+      <td style="text-align: center">6</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">flzma2</td>
+      <td style="text-align: center">7</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">flzma2</td>
+      <td style="text-align: center">8</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">flzma2</td>
+      <td style="text-align: center">9</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">libdeflate</td>
+      <td style="text-align: center">3</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">libdeflate</td>
+      <td style="text-align: center">5</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">libdeflate</td>
+      <td style="text-align: center">9</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">lz4</td>
+      <td style="text-align: center">1</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">lzma</td>
+      <td style="text-align: center">5</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">lzma</td>
+      <td style="text-align: center">6</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">lzma</td>
+      <td style="text-align: center">7</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">lzma</td>
+      <td style="text-align: center">8</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">lzma</td>
+      <td style="text-align: center">9</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">memcpy</td>
+      <td style="text-align: center">N/A</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">zlib</td>
+      <td style="text-align: center">1</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">zlib</td>
+      <td style="text-align: center">5</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">zstd</td>
+      <td style="text-align: center">22</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">zstd</td>
+      <td style="text-align: center">5</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">zstd</td>
+      <td style="text-align: center">9</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">gzip</td>
+      <td style="text-align: center">N/A</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Blosc at level 11 was stopped manually after running for &gt;12 hours.</p>
+
+<p>Each tool was tested once on an HTPC instance with 1 processor and 8GB
+of memory. I additionally evaluated some methods with an instance with 4
+processors and 32 GB of memory, but didn’t see large differences.
+Possibly Turbobench does not account for multithreading appropriately. I
+probably did not do this correctly – one thread is our target use case,
+so I did not spend a lot of time on multithreading.</p>
+
+<p>Note that I am not positive the processors on the various HTPC servers
+used were identical, so there may be some noise in the timing data.</p>
+
+<h1 id="tools">Tools</h1>
+
+<p>The tool I ended up using for most of the comparisons is called
+<a href="https://github.com/powturbo/TurboBench">TurboBench</a>, which has the
+advantages that it tests strictly in memory, has a lot of compression
+algorithms available, is flexible, and was easy for me to run on our
+HTPC cluster.</p>
+
+<p>One thing Turbobench does not do is test gzip. Potentially one of the
+algorithms it offers is identical to gzip’s but I could not discern
+that, so I tested gzip using a separate script.</p>
+
+<p>I was very curious about a library called blosc. Discussion on the
+<a href="https://github.com/InsightSoftwareConsortium/ITK/issues/348">github for
+NRRD</a>
+suggested it might be ideal for this application. However, the lack of
+easily available command line tools for its use made me give up on it.</p>
+
+<p>All these analyses were run at UW-Madison at CHTC using HTCondor. Code
+for analysis is available on the <a href="https://github.com/mrpeverill/CondorCompressionBenchmark">github
+repo</a>.</p>
+
+<h1 id="results">Results</h1>
+
+<p>The full data table for this analysis is in the github repository as
+‘fulldata.Rds’. I’m only going to plot points that are optimal on some
+dimension, and I’ll exclude a few outliers.</p>
+
+<p><img src="/assets/img/NeuroCompressionComparison/plot-1.png" alt="" /><!-- --></p>
+
+<h1 id="discussion">Discussion</h1>
+
+<p>In general, it is the compression benchmarks that seem to vary the most.
+Decompression is not much over 30 seconds even for the most time
+intensive method. flzma2 is a clear winner in these trials, with about
+4% more compression than gzip. Flzma2 is not commonly available, and it
+would be best if we could use something less obscure. It is a fast
+implementation of LZMA, which is available in the package xz, so let’s
+compare those:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"> </th>
+      <th style="text-align: center">method</th>
+      <th style="text-align: center">clabel</th>
+      <th style="text-align: center">ratio</th>
+      <th style="text-align: center">ctime</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><strong>4</strong></td>
+      <td style="text-align: center">flzma2</td>
+      <td style="text-align: center">L5–37.0 MB</td>
+      <td style="text-align: center">0.8152</td>
+      <td style="text-align: center">326</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><strong>5</strong></td>
+      <td style="text-align: center">flzma2</td>
+      <td style="text-align: center">L6–70.9 MB</td>
+      <td style="text-align: center">0.7855</td>
+      <td style="text-align: center">263.8</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><strong>6</strong></td>
+      <td style="text-align: center">flzma2</td>
+      <td style="text-align: center">L7–138.8 MB</td>
+      <td style="text-align: center">0.7817</td>
+      <td style="text-align: center">292.4</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><strong>7</strong></td>
+      <td style="text-align: center">flzma2</td>
+      <td style="text-align: center">L8–273.2 MB</td>
+      <td style="text-align: center">0.7796</td>
+      <td style="text-align: center">446.8</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><strong>8</strong></td>
+      <td style="text-align: center">flzma2</td>
+      <td style="text-align: center">L9–273.2 MB</td>
+      <td style="text-align: center">0.779</td>
+      <td style="text-align: center">492.4</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><strong>13</strong></td>
+      <td style="text-align: center">lzma</td>
+      <td style="text-align: center">L5–168.3 MB</td>
+      <td style="text-align: center">0.797</td>
+      <td style="text-align: center">438.9</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><strong>14</strong></td>
+      <td style="text-align: center">lzma</td>
+      <td style="text-align: center">L6–336.0 MB</td>
+      <td style="text-align: center">0.7969</td>
+      <td style="text-align: center">433.8</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><strong>15</strong></td>
+      <td style="text-align: center">lzma</td>
+      <td style="text-align: center">L7–336.0 MB</td>
+      <td style="text-align: center">0.7969</td>
+      <td style="text-align: center">672.3</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><strong>16</strong></td>
+      <td style="text-align: center">lzma</td>
+      <td style="text-align: center">L8–604.5 MB</td>
+      <td style="text-align: center">0.795</td>
+      <td style="text-align: center">689.7</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><strong>17</strong></td>
+      <td style="text-align: center">lzma</td>
+      <td style="text-align: center">L9–604.5 MB</td>
+      <td style="text-align: center">0.795</td>
+      <td style="text-align: center">906.2</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Lzma at level 6 is within 1.5% of flzma2 at level 9, and is faster and
+uses less memory. So that’s probably our winner. It’s also the default
+setting of xz. As a bonus, xz supports integrity checking as a built in,
+which is very nice.</p>
+
+<p>Here’s a plot of all the ‘lzma’ methods:</p>
+
+<p><img src="/assets/img/NeuroCompressionComparison/lzmaplot-1.png" alt="" /><!-- --></p>
+
+<p>Mind the scales – the compression ratios are not actually that different
+here.</p>
+
+<h1 id="real-world-testing">‘Real World’ testing</h1>
+
+<p>So the above testing is using just memory to memory compression, which
+is not the environment where our compression will actually happen. What
+about when we do this with disk i/o?</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>/usr/bin/time <span class="nt">-f</span> <span class="s1">'time: \t%e realSeconds \t%M peakMem'</span> xz <span class="nt">-zk</span> subject.tar
+<span class="nb">time</span>:   1525.79 realSeconds     97608 peakMem
+<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-l</span> subject.<span class="k">*</span>
+<span class="nt">-rw-rw-r--</span> 1 peverill peverill 3045427200 Dec 16 09:37 subject.tar
+<span class="nt">-rw-rw-r--</span> 1 peverill peverill 2386532328 Dec 16 09:37 subject.tar.xz
+</code></pre></div></div>
+
+<p>So xz (lzma level 6) takes 25.4166667 minutes to compress the data,
+achieves a compression ratio of 0.7836445, and uses 97.6 MB of memory.
+It also appears to embed a file integrity check automatically. Sounds
+good!</p>
+
+<h1 id="what-about-blosc">What about Blosc?</h1>
+
+<p>The promise of Blosc for this type of data is that by using a
+pre-filter, it can better take advantage of the fact that a nifti file
+is ultimately an array of 16bit numbers, and the most significant digits
+don’t change that much (most compression algorithms do not account for
+this, but blosc’s pre-filtering options do). Don’t quote me on that, I’m
+following this <a href="https://github.com/InsightSoftwareConsortium/ITK/issues/348#issuecomment-454436011">forum
+post</a>.</p>
+
+<p>I tried a few times to get this working with various tools, but could
+not realize gains (certainly not to the extent to justify using a less
+mature tool).</p>
+
+<p>With the compress_file program packaged with c-blosc2:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>/usr/bin/time <span class="nt">-f</span> <span class="s1">'time: \t%e realSeconds \t%M peakMem'</span> ./c-blosc2-2.6.0/build/examples/compress_file subject.tar subject.tar.b2frame
+Blosc version info: 2.6.0 <span class="o">(</span><span class="nv">$Date</span>:: 2022-12-08 <span class="c">#$)</span>
+Compression ratio: 2904.3 MB -&gt; 2710.9 MB <span class="o">(</span>1.1x<span class="o">)</span>
+Compression <span class="nb">time</span>: 11.2 s, 260.3 MB/s
+<span class="nb">time</span>:   11.15 realSeconds       5344 peakMem
+</code></pre></div></div>
+
+<p>With <a href="https://github.com/Blosc/bloscpack">bloscpack</a> using default
+options:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>/usr/bin/time <span class="nt">-f</span> <span class="s1">'time: \t%e realSeconds \t%M peakMem'</span> <span class="se">\</span>
+  python3 packages/bin/blpk <span class="nt">-v</span> <span class="nt">-n</span> 1 c subject.tar
+blpk: using 1 thread
+blpk: getting ready <span class="k">for </span>compression
+blpk: input file is: <span class="s1">'subject.tar'</span>
+blpk: output file is: <span class="s1">'subject.tar.blp'</span>
+blpk: input file size: 2.84G <span class="o">(</span>3045427200B<span class="o">)</span>
+blpk: nchunks: 2905
+blpk: chunk_size: 1.0M <span class="o">(</span>1048576B<span class="o">)</span>
+blpk: last_chunk_size: 354.0K <span class="o">(</span>362496B<span class="o">)</span>
+blpk: output file size: 2.49G <span class="o">(</span>2668748652B<span class="o">)</span>
+blpk: compression ratio: 1.141144
+blpk: <span class="k">done
+</span><span class="nb">time</span>:   8.15 realSeconds        44392 peakMem
+</code></pre></div></div>
+
+<p>The same, but using the zstd algorithm:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>/usr/bin/time <span class="nt">-f</span> <span class="s1">'time: \t%e realSeconds \t%M peakMem'</span> python3 packages/bin/blpk <span class="nt">-vn</span> 1 c <span class="nt">--codec</span> zstd subject.tar
+blpk: using 1 thread
+blpk: getting ready <span class="k">for </span>compression
+blpk: input file is: <span class="s1">'subject.tar'</span>
+blpk: output file is: <span class="s1">'subject.tar.blp'</span>
+blpk: input file size: 2.84G <span class="o">(</span>3045427200B<span class="o">)</span>
+blpk: nchunks: 2905
+blpk: chunk_size: 1.0M <span class="o">(</span>1048576B<span class="o">)</span>
+blpk: last_chunk_size: 354.0K <span class="o">(</span>362496B<span class="o">)</span>
+blpk: output file size: 2.15G <span class="o">(</span>2306001080B<span class="o">)</span>
+blpk: compression ratio: 1.320653
+blpk: <span class="k">done
+</span><span class="nb">time</span>:   134.08 realSeconds      51328 peakMem
+</code></pre></div></div>
+
+<p>Finally, to make sure that I was using bit-shuffling (which is
+supposedly where the magic happens), I wrote a custom version of the
+compress_file program. Assuming I did that right, here is the output:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>/usr/bin/time <span class="nt">-f</span> <span class="s1">'time: \t%e realSeconds \t%M peakMem'</span> c-blosc2-2.6.0/build/examples/compress_file subject.tar subject.tar.b2frame
+Blosc version info: 2.6.0 <span class="o">(</span><span class="nv">$Date</span>:: 2022-12-08 <span class="c">#$)</span>
+Compression ratio: 2904.3 MB -&gt; 2397.1 MB <span class="o">(</span>1.2x<span class="o">)</span>
+Compression <span class="nb">time</span>: 52.3 s, 55.5 MB/s
+<span class="nb">time</span>:   52.34 realSeconds       9084 peakMem
+</code></pre></div></div>
+
+<p>In fairness, the best version (zstd using bloscpack) compressed the file
+at 75.7% in just over two minutes, using 51MB of ram – much superior to
+lzma. Also, all of these tests used typesize=8, and possibly it should
+be 16. However, it’s not enough of a benefit to justify the additional
+complexity (and I ran out of time exploring it).</p>]]></content><author><name>Matthew Peverill</name></author><summary type="html"><![CDATA[We are working on a pre-processing pipeline for a large neuroimaging dataset, and we want to be sure we are being judicious with our disk space usage. .nii Files are, conventionally, compressed with the program gzip (sometimes wrapped around a tape archive or tar file). Gzip is ubiquitously available, has a low memory footprint, and does an ok job. However, there are other perfectly mature, lossless compression formats available which get better results. If you are working with &gt;100TB of data, this could matter a lot to your operating costs. Since compression performance is dependent on the type of data you had, I wanted to compare the efficiency of a number of algorithms and see what our options were.]]></summary></entry><entry><title type="html">A Tool for Comparing Publication Lists</title><link href="https://matthewpeverill.com/blog/2022/AToolForComparingPublicationLists/" rel="alternate" type="text/html" title="A Tool for Comparing Publication Lists" /><published>2022-09-21T05:00:00-05:00</published><updated>2022-09-21T05:00:00-05:00</updated><id>https://matthewpeverill.com/blog/2022/AToolForComparingPublicationLists</id><content type="html" xml:base="https://matthewpeverill.com/blog/2022/AToolForComparingPublicationLists/"><![CDATA[<p>Every web page (e.g. research gate, ORCID, google scholar) seems to want to curate their own list of my publications, which leaves me to try and bring them in to alignment. Here’s a quickpython script which will scrape the DOI numbers from two of either a webpage or text file and compare them for unique values you might want to add to the other. It also searches for duplicate DOIs. Use at your own risk, and you might have to edit the list of pre-print server DOI prefixes if you use something other than bioarxiv or psyarxiv. The script requires the pandas library.</p>
+
+<p>You can download the script from <a href="https://github.com/mrpeverill/cv_compare">github</a></p>
+
+<h1 id="cv_comparepy">cv_compare.py</h1>
+
+<p>Compare lists of publications with DOIs. Also reports duplicate DOIs.</p>
+
+<p>Currently only works with two arguments. Will take a url or file path. Searches DOI’s for a manually coded list of preprint servers so those can be reported.</p>
+
+<p>usage:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>~/Dropbox/code/cv_compare$ ./cv_compare.py ex_a.txt ex_b.txt
+
+</code></pre></div></div>
+<p>Outputs:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ex_a.txt
+Found 4 DOI codes
+Found 3 preprints
+___________________
+ex_b.txt
+Found 4 DOI codes
+Found 2 preprints
+___________________
+Duplicate Detection:
+1 duplicates in A
+3    10.1101/2021.09.22.461242
+Name: DOIs, dtype: object
+0 duplicates in B
+Series([], Name: DOIs, dtype: object)
+___________________
+Unique Items:
+                         DOIs  preprint                      DOIsB preprintB
+1   10.1101/2021.03.13.432212  preprint
+2  10.1016/j.jaac.2015.06.010
+0                                         10.3389/fninf.2016.00002
+1                                            10.31234/osf.io/97qbw  preprint
+3                                        10.1016/j.dcn.2017.11.006
+</code></pre></div></div>]]></content><author><name></name></author><summary type="html"><![CDATA[Every web page (e.g. research gate, ORCID, google scholar) seems to want to curate their own list of my publications, which leaves me to try and bring them in to alignment. Here’s a quickpython script which will scrape the DOI numbers from two of either a webpage or text file and compare them for unique values you might want to add to the other. It also searches for duplicate DOIs. Use at your own risk, and you might have to edit the list of pre-print server DOI prefixes if you use something other than bioarxiv or psyarxiv. The script requires the pandas library.]]></summary></entry><entry><title type="html">Selecting a matched subsample</title><link href="https://matthewpeverill.com/blog/2022/MatchedSamplingTest/" rel="alternate" type="text/html" title="Selecting a matched subsample" /><published>2022-06-30T00:00:00-05:00</published><updated>2022-06-30T00:00:00-05:00</updated><id>https://matthewpeverill.com/blog/2022/MatchedSamplingTest</id><content type="html" xml:base="https://matthewpeverill.com/blog/2022/MatchedSamplingTest/"><![CDATA[<p>This is a second post in a series on splitting samples. In this case,
+say you have a very small sub-group of a large sample. You want to look
+at that subgroup and controls, but you don’t want your sample to be 90%
+controls. Instead, you want the subgroup and a sub-sample of controls
+matched on some demographic variables. As a further complication, lets
+make one variable (age) continuous, and lets make age and sex correlated
+with subgroup membership. This example is heavily cribbed from a <a href="https://datascienceplus.com/how-to-use-r-for-matching-samples-propensity-score/">post
+by Norbert
+Köhler</a>.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">sn</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">);</span><span class="w"> </span><span class="n">library</span><span class="p">(</span><span class="n">ggthemes</span><span class="p">);</span><span class="w"> </span><span class="n">theme_set</span><span class="p">(</span><span class="n">theme_tufte</span><span class="p">())</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">ggExtra</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">pander</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">MatchIt</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">simstudy</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<h1 id="simulation">Simulation</h1>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">set.seed</span><span class="p">(</span><span class="m">31453</span><span class="p">)</span><span class="w">
+
+</span><span class="n">simdef</span><span class="o">&lt;-</span><span class="n">defData</span><span class="p">(</span><span class="n">varname</span><span class="o">=</span><span class="s2">"age"</span><span class="p">,</span><span class="w">
+                </span><span class="n">dist</span><span class="o">=</span><span class="s2">"uniformInt"</span><span class="p">,</span><span class="w">
+                </span><span class="n">formula</span><span class="o">=</span><span class="s2">"120;144"</span><span class="p">)</span><span class="w"> </span><span class="c1">#age in months between 10-12</span><span class="w">
+</span><span class="n">simdef</span><span class="o">&lt;-</span><span class="n">defData</span><span class="p">(</span><span class="n">simdef</span><span class="p">,</span><span class="n">varname</span><span class="o">=</span><span class="s2">"sex"</span><span class="p">,</span><span class="w">
+                </span><span class="n">dist</span><span class="o">=</span><span class="s2">"binary"</span><span class="p">,</span><span class="w">
+                </span><span class="n">formula</span><span class="o">=</span><span class="s2">".5"</span><span class="p">)</span><span class="w">
+</span><span class="n">simdef</span><span class="o">&lt;-</span><span class="n">defData</span><span class="p">(</span><span class="n">simdef</span><span class="p">,</span><span class="n">varname</span><span class="o">=</span><span class="s2">"parent.ed"</span><span class="p">,</span><span class="w">
+                </span><span class="n">dist</span><span class="o">=</span><span class="s2">"categorical"</span><span class="p">,</span><span class="w">
+                </span><span class="n">formula</span><span class="o">=</span><span class="n">genCatFormula</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="m">6</span><span class="p">))</span><span class="w">
+</span><span class="n">simdef</span><span class="o">&lt;-</span><span class="n">defData</span><span class="p">(</span><span class="n">simdef</span><span class="p">,</span><span class="n">varname</span><span class="o">=</span><span class="s2">"missingdata"</span><span class="p">,</span><span class="w">
+                </span><span class="n">dist</span><span class="o">=</span><span class="s2">"binary"</span><span class="p">,</span><span class="w">
+                </span><span class="n">formula</span><span class="o">=</span><span class="s2">".2"</span><span class="p">)</span><span class="w">
+</span><span class="n">simdef</span><span class="o">&lt;-</span><span class="n">defData</span><span class="p">(</span><span class="n">simdef</span><span class="p">,</span><span class="n">varname</span><span class="o">=</span><span class="s2">"inSubGroup"</span><span class="p">,</span><span class="w">
+                </span><span class="n">dist</span><span class="o">=</span><span class="s2">"binary"</span><span class="p">,</span><span class="w">
+                </span><span class="n">formula</span><span class="o">=</span><span class="s2">".005/12 * (age-132) + .005*sex + .0175"</span><span class="p">)</span><span class="w">
+
+
+</span><span class="n">df</span><span class="o">&lt;-</span><span class="n">genData</span><span class="p">(</span><span class="m">12000</span><span class="p">,</span><span class="n">simdef</span><span class="p">)</span><span class="w">
+
+</span><span class="n">df</span><span class="o">$</span><span class="n">income</span><span class="o">&lt;-</span><span class="n">rsn</span><span class="p">(</span><span class="n">nrow</span><span class="p">(</span><span class="n">df</span><span class="p">),</span><span class="n">alpha</span><span class="o">=</span><span class="m">3</span><span class="p">)</span><span class="w">
+</span><span class="n">numbers_of_bins</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="w">
+</span><span class="n">df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+    </span><span class="n">mutate</span><span class="p">(</span><span class="w">
+        </span><span class="c1"># bin i:</span><span class="w">
+        </span><span class="n">i.bin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cut</span><span class="p">(</span><span class="n">income</span><span class="p">,</span><span class="w">
+                    </span><span class="n">breaks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">unique</span><span class="p">(</span><span class="n">quantile</span><span class="p">(</span><span class="w">
+                        </span><span class="n">income</span><span class="p">,</span><span class="w">
+                        </span><span class="n">probs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">seq.int</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">numbers_of_bins</span><span class="p">)</span><span class="w">
+                    </span><span class="p">)),</span><span class="w">
+                    </span><span class="n">include.lowest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w">
+                    </span><span class="n">labels</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span><span class="w">
+    </span><span class="p">)</span><span class="w">
+
+</span><span class="n">df</span><span class="o">&lt;-</span><span class="n">as.data.frame</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="w">
+
+</span><span class="n">factorialize</span><span class="o">&lt;-</span><span class="nf">c</span><span class="p">(</span><span class="s2">"sex"</span><span class="p">,</span><span class="s2">"missingdata"</span><span class="p">,</span><span class="s2">"parent.ed"</span><span class="p">,</span><span class="s2">"inSubGroup"</span><span class="p">)</span><span class="w">
+</span><span class="n">df</span><span class="p">[</span><span class="n">factorialize</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">lapply</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">factorialize</span><span class="p">],</span><span class="w"> </span><span class="n">factor</span><span class="p">)</span><span class="w">
+</span><span class="n">levels</span><span class="p">(</span><span class="n">df</span><span class="o">$</span><span class="n">inSubGroup</span><span class="p">)</span><span class="o">&lt;-</span><span class="nf">c</span><span class="p">(</span><span class="s2">"control"</span><span class="p">,</span><span class="s2">"treatment"</span><span class="p">)</span><span class="w">
+
+</span><span class="n">pander</span><span class="p">(</span><span class="n">head</span><span class="p">(</span><span class="n">df</span><span class="p">))</span><span class="w">
+</span></code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">id</th>
+      <th style="text-align: center">age</th>
+      <th style="text-align: center">sex</th>
+      <th style="text-align: center">parent.ed</th>
+      <th style="text-align: center">missingdata</th>
+      <th style="text-align: center">inSubGroup</th>
+      <th style="text-align: center">income</th>
+      <th style="text-align: center">i.bin</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">128</td>
+      <td style="text-align: center">0</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">control</td>
+      <td style="text-align: center">1.392</td>
+      <td style="text-align: center">9</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">2</td>
+      <td style="text-align: center">138</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">5</td>
+      <td style="text-align: center">0</td>
+      <td style="text-align: center">control</td>
+      <td style="text-align: center">-0.02661</td>
+      <td style="text-align: center">1</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">130</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">6</td>
+      <td style="text-align: center">0</td>
+      <td style="text-align: center">control</td>
+      <td style="text-align: center">1.911</td>
+      <td style="text-align: center">10</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">127</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">5</td>
+      <td style="text-align: center">0</td>
+      <td style="text-align: center">control</td>
+      <td style="text-align: center">0.3791</td>
+      <td style="text-align: center">4</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">5</td>
+      <td style="text-align: center">121</td>
+      <td style="text-align: center">0</td>
+      <td style="text-align: center">5</td>
+      <td style="text-align: center">0</td>
+      <td style="text-align: center">control</td>
+      <td style="text-align: center">0.909</td>
+      <td style="text-align: center">7</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">6</td>
+      <td style="text-align: center">132</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">0</td>
+      <td style="text-align: center">control</td>
+      <td style="text-align: center">1.695</td>
+      <td style="text-align: center">10</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pander</span><span class="p">(</span><span class="n">table</span><span class="p">(</span><span class="n">df</span><span class="o">$</span><span class="n">inSubGroup</span><span class="p">))</span><span class="w">
+</span></code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">control</th>
+      <th style="text-align: center">treatment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">11761</td>
+      <td style="text-align: center">239</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="is-there-an-imbalance">Is there an imbalance?</h1>
+
+<p>We only need to match on age, sex, and one other categorical variable.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">imbalance_model</span><span class="w"> </span><span class="o">&lt;-</span><span class="w">
+    </span><span class="n">matchit</span><span class="p">(</span><span class="w">
+        </span><span class="n">inSubGroup</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">+</span><span class="n">sex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i.bin</span><span class="p">,</span><span class="w">
+        </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">df</span><span class="p">,</span><span class="w">
+        </span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">NULL</span><span class="p">,</span><span class="w">
+        </span><span class="n">distance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"glm"</span><span class="w">
+    </span><span class="p">)</span><span class="w">
+
+</span><span class="n">summary</span><span class="p">(</span><span class="n">imbalance_model</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## 
+## Call:
+## matchit(formula = inSubGroup ~ age + sex + i.bin, data = df, 
+##     method = NULL, distance = "glm")
+## 
+## Summary of Balance for All Data:
+##          Means Treated Means Control Std. Mean Diff. Var. Ratio eCDF Mean
+## distance        0.0202        0.0199          0.1269     0.9939    0.0346
+## age           132.4812      131.8617          0.0850     1.0289    0.0266
+## sex0            0.4686        0.5021         -0.0671          .    0.0335
+## sex1            0.5314        0.4979          0.0671          .    0.0335
+## i.bin           5.3096        5.5039         -0.0672     1.0122    0.0195
+##          eCDF Max
+## distance   0.0856
+## age        0.0600
+## sex0       0.0335
+## sex1       0.0335
+## i.bin      0.0367
+## 
+## 
+## Sample Sizes:
+##           Control Treated
+## All         11761     239
+## Matched     11761     239
+## Unmatched       0       0
+## Discarded       0       0
+</code></pre></div></div>
+
+<p>Yes, age and sex are imbalanced (which we simulated). So is income!</p>
+
+<h1 id="nearest-neighbor-matching">Nearest Neighbor Matching</h1>
+
+<p>Note that it is important to code variable type correctly, i.e. that
+factors are factors and not numeric.</p>
+
+<h2 id="sub-sampling">Sub-sampling</h2>
+
+<p>We want 2 controls per ‘treatment’ participant.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">matching_model</span><span class="w"> </span><span class="o">&lt;-</span><span class="w">
+    </span><span class="n">matchit</span><span class="p">(</span><span class="w">
+        </span><span class="n">inSubGroup</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i.bin</span><span class="p">,</span><span class="w">
+        </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">df</span><span class="p">,</span><span class="w">
+        </span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"nearest"</span><span class="p">,</span><span class="w">
+        </span><span class="n">distance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"glm"</span><span class="p">,</span><span class="w">
+        </span><span class="n">ratio</span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="w">
+    </span><span class="p">)</span><span class="w">
+
+</span><span class="n">summary</span><span class="p">(</span><span class="n">matching_model</span><span class="p">,</span><span class="n">un</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## 
+## Call:
+## matchit(formula = inSubGroup ~ age + sex + i.bin, data = df, 
+##     method = "nearest", distance = "glm", ratio = 2)
+## 
+## Summary of Balance for Matched Data:
+##          Means Treated Means Control Std. Mean Diff. Var. Ratio eCDF Mean
+## distance        0.0202        0.0202               0     1.0021         0
+## age           132.4812      132.4812               0     1.0021         0
+## sex0            0.4686        0.4686               0          .         0
+## sex1            0.5314        0.5314               0          .         0
+## i.bin           5.3096        5.3096               0     1.0021         0
+##          eCDF Max Std. Pair Dist.
+## distance        0               0
+## age             0               0
+## sex0            0               0
+## sex1            0               0
+## i.bin           0               0
+## 
+## Sample Sizes:
+##           Control Treated
+## All         11761     239
+## Matched       478     239
+## Unmatched   11283       0
+## Discarded       0       0
+</code></pre></div></div>
+
+<p>The distribution parameters should be similar, and the control n should
+be twice the treated n. Then we save the new data frame:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df.match</span><span class="o">&lt;-</span><span class="n">match.data</span><span class="p">(</span><span class="n">matching_model</span><span class="p">)[,</span><span class="m">1</span><span class="o">:</span><span class="n">ncol</span><span class="p">(</span><span class="n">df</span><span class="p">)]</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="checking">Checking</h2>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df.match</span><span class="o">$</span><span class="n">inSubGroup</span><span class="o">&lt;-</span><span class="n">factor</span><span class="p">(</span><span class="n">df.match</span><span class="o">$</span><span class="n">inSubGroup</span><span class="p">,</span><span class="n">labels</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="s2">"Control"</span><span class="p">,</span><span class="s2">"Treatment"</span><span class="p">))</span><span class="w">
+</span><span class="n">histbygroup</span><span class="o">&lt;-</span><span class="k">function</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">xvar</span><span class="o">=</span><span class="s2">"i"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">ggplot</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">aes_string</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">xvar</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">geom_density</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">facet_grid</span><span class="p">(</span><span class="o">~</span><span class="n">inSubGroup</span><span class="p">)</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">histbygroup</span><span class="p">(</span><span class="n">df.match</span><span class="p">,</span><span class="s2">"i.bin"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/MatchedSamplingTest/unnamed-chunk-6-1.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">histbygroup</span><span class="p">(</span><span class="n">df.match</span><span class="p">,</span><span class="s2">"age"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/MatchedSamplingTest/unnamed-chunk-6-2.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">barbygroup</span><span class="o">&lt;-</span><span class="k">function</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">xvar</span><span class="o">=</span><span class="s2">"i"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">ggplot</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">aes_string</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">xvar</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">geom_bar</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">facet_grid</span><span class="p">(</span><span class="o">~</span><span class="n">inSubGroup</span><span class="p">)</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">barbygroup</span><span class="p">(</span><span class="n">df.match</span><span class="p">,</span><span class="s2">"sex"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/MatchedSamplingTest/unnamed-chunk-6-3.png" alt="" /><!-- --></p>
+
+<p>Nearest neighbor is doing pretty well! Here’s another method for
+comparison:</p>
+
+<h1 id="optimal-matching">Optimal Matching</h1>
+
+<h2 id="sub-sampling-1">Sub-sampling</h2>
+
+<p>We want 2 controls per ‘treatment’ participant.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">matching_model2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w">
+    </span><span class="n">matchit</span><span class="p">(</span><span class="w">
+        </span><span class="n">inSubGroup</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i.bin</span><span class="p">,</span><span class="w">
+        </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">df</span><span class="p">,</span><span class="w">
+        </span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"optimal"</span><span class="p">,</span><span class="w">
+        </span><span class="n">distance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"glm"</span><span class="p">,</span><span class="w">
+        </span><span class="n">ratio</span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="w">
+    </span><span class="p">)</span><span class="w">
+
+</span><span class="n">summary</span><span class="p">(</span><span class="n">matching_model2</span><span class="p">,</span><span class="n">un</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## 
+## Call:
+## matchit(formula = inSubGroup ~ age + sex + i.bin, data = df, 
+##     method = "optimal", distance = "glm", ratio = 2)
+## 
+## Summary of Balance for Matched Data:
+##          Means Treated Means Control Std. Mean Diff. Var. Ratio eCDF Mean
+## distance        0.0202        0.0201          0.0546     1.0202    0.0177
+## age           132.4812      132.3891          0.0126     1.0956    0.0176
+## sex0            0.4686        0.5209         -0.1048          .    0.0523
+## sex1            0.5314        0.4791          0.1048          .    0.0523
+## i.bin           5.3096        5.2573          0.0181     1.0224    0.0073
+##          eCDF Max Std. Pair Dist.
+## distance   0.0607          0.2131
+## age        0.0460          0.7938
+## sex0       0.0523          0.7085
+## sex1       0.0523          0.7085
+## i.bin      0.0167          0.9767
+## 
+## Sample Sizes:
+##           Control Treated
+## All         11761     239
+## Matched       478     239
+## Unmatched   11283       0
+## Discarded       0       0
+</code></pre></div></div>
+
+<p>The distribution parameters should be similar, and the control n should
+be twice the treated n. Then we save the new data frame:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df.match2</span><span class="o">&lt;-</span><span class="n">match.data</span><span class="p">(</span><span class="n">matching_model2</span><span class="p">)[,</span><span class="m">1</span><span class="o">:</span><span class="n">ncol</span><span class="p">(</span><span class="n">df</span><span class="p">)]</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="checking-1">Checking</h2>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">histbygroup</span><span class="o">&lt;-</span><span class="k">function</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">xvar</span><span class="o">=</span><span class="s2">"i"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">ggplot</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">aes_string</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">xvar</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">geom_density</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">facet_grid</span><span class="p">(</span><span class="o">~</span><span class="n">inSubGroup</span><span class="p">)</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">histbygroup</span><span class="p">(</span><span class="n">df.match2</span><span class="p">,</span><span class="s2">"i.bin"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/MatchedSamplingTest/unnamed-chunk-9-1.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">histbygroup</span><span class="p">(</span><span class="n">df.match2</span><span class="p">,</span><span class="s2">"age"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/MatchedSamplingTest/unnamed-chunk-9-2.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">barbygroup</span><span class="o">&lt;-</span><span class="k">function</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">xvar</span><span class="o">=</span><span class="s2">"i"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">ggplot</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">aes_string</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">xvar</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">geom_bar</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">facet_grid</span><span class="p">(</span><span class="o">~</span><span class="n">inSubGroup</span><span class="p">)</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">barbygroup</span><span class="p">(</span><span class="n">df.match2</span><span class="p">,</span><span class="s2">"sex"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/MatchedSamplingTest/unnamed-chunk-9-3.png" alt="" /><!-- --></p>
+
+<p>Nearest neighbor appears to do a better job</p>]]></content><author><name>Matthew Peverill</name></author><summary type="html"><![CDATA[This is a second post in a series on splitting samples. In this case, say you have a very small sub-group of a large sample. You want to look at that subgroup and controls, but you don’t want your sample to be 90% controls. Instead, you want the subgroup and a sub-sample of controls matched on some demographic variables. As a further complication, lets make one variable (age) continuous, and lets make age and sex correlated with subgroup membership. This example is heavily cribbed from a post by Norbert Köhler.]]></summary></entry><entry><title type="html">Splitting a Sample by Multiple Balancing Factors</title><link href="https://matthewpeverill.com/blog/2022/BalancedSamplingTest/" rel="alternate" type="text/html" title="Splitting a Sample by Multiple Balancing Factors" /><published>2022-06-22T00:00:00-05:00</published><updated>2022-06-22T00:00:00-05:00</updated><id>https://matthewpeverill.com/blog/2022/BalancedSamplingTest</id><content type="html" xml:base="https://matthewpeverill.com/blog/2022/BalancedSamplingTest/"><![CDATA[<p>This is an example of splitting a sample in two preserving the balance
+of several variables in R.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">sn</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">);</span><span class="w"> </span><span class="n">library</span><span class="p">(</span><span class="n">ggthemes</span><span class="p">);</span><span class="w"> </span><span class="n">theme_set</span><span class="p">(</span><span class="n">theme_tufte</span><span class="p">())</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">caret</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">pander</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">simstudy</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<h1 id="two-factors-using-caret">Two factors using caret</h1>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">set.seed</span><span class="p">(</span><span class="m">3453</span><span class="p">)</span><span class="w">
+</span><span class="c1">#rsn samples from a skewed normal distribution</span><span class="w">
+</span><span class="n">site1</span><span class="o">&lt;-</span><span class="n">data.frame</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="n">rsn</span><span class="p">(</span><span class="m">2000</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="m">-3</span><span class="p">))</span><span class="w">
+</span><span class="n">site2</span><span class="o">&lt;-</span><span class="n">data.frame</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="n">rsn</span><span class="p">(</span><span class="m">4000</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="m">0</span><span class="p">))</span><span class="w">
+</span><span class="n">site3</span><span class="o">&lt;-</span><span class="n">data.frame</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="n">rsn</span><span class="p">(</span><span class="m">1000</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="m">3</span><span class="p">))</span><span class="w">
+</span><span class="n">sitedesc</span><span class="o">&lt;-</span><span class="n">factor</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="nf">rep</span><span class="p">(</span><span class="s2">"site.one"</span><span class="p">,</span><span class="m">2000</span><span class="p">),</span><span class="w">
+                   </span><span class="nf">rep</span><span class="p">(</span><span class="s2">"site.two"</span><span class="p">,</span><span class="m">4000</span><span class="p">),</span><span class="w">
+                   </span><span class="nf">rep</span><span class="p">(</span><span class="s2">"site.three"</span><span class="p">,</span><span class="m">1000</span><span class="p">)))</span><span class="w">
+</span><span class="n">df</span><span class="o">&lt;-</span><span class="n">rbind</span><span class="p">(</span><span class="n">site1</span><span class="p">,</span><span class="n">site2</span><span class="p">,</span><span class="n">site3</span><span class="p">)</span><span class="w">
+</span><span class="n">df</span><span class="o">$</span><span class="n">site</span><span class="o">&lt;-</span><span class="n">sitedesc</span><span class="w">
+
+
+</span><span class="n">numbers_of_bins</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="w">
+</span><span class="n">df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+    </span><span class="n">mutate</span><span class="p">(</span><span class="w">
+        </span><span class="c1"># bin i:</span><span class="w">
+        </span><span class="n">i.bin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cut</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w">
+                    </span><span class="n">breaks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">unique</span><span class="p">(</span><span class="n">quantile</span><span class="p">(</span><span class="w">
+                        </span><span class="n">i</span><span class="p">,</span><span class="w">
+                        </span><span class="n">probs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">seq.int</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">numbers_of_bins</span><span class="p">)</span><span class="w">
+                    </span><span class="p">)),</span><span class="w">
+                    </span><span class="n">include.lowest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w">
+                    </span><span class="n">labels</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">),</span><span class="w">
+        </span><span class="c1"># interact the factors to make a unique level for each combination.</span><span class="w">
+        </span><span class="n">interaction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">interaction</span><span class="p">(</span><span class="n">i.bin</span><span class="p">,</span><span class="w"> </span><span class="n">site</span><span class="p">)</span><span class="w"> 
+    </span><span class="p">)</span><span class="w">
+</span><span class="n">pander</span><span class="p">(</span><span class="n">head</span><span class="p">(</span><span class="n">df</span><span class="p">))</span><span class="w">
+</span></code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">i</th>
+      <th style="text-align: center">site</th>
+      <th style="text-align: center">i.bin</th>
+      <th style="text-align: center">interaction</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">-1.504</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">1.site.one</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">-1.031</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">2</td>
+      <td style="text-align: center">2.site.one</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">-0.8683</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">3.site.one</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">-1.119</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">2</td>
+      <td style="text-align: center">2.site.one</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">-0.4916</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">4.site.one</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">-0.4953</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">4.site.one</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Now that the factors are combined, we can sample evenly from them using
+caret</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">trainIndex</span><span class="o">&lt;-</span><span class="n">createDataPartition</span><span class="p">(</span><span class="n">df</span><span class="o">$</span><span class="n">interaction</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="m">.5</span><span class="p">,</span><span class="n">times</span><span class="o">=</span><span class="m">1</span><span class="p">,</span><span class="n">list</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## Warning in createDataPartition(df$interaction, p = 0.5, times = 1, list =
+## FALSE): Some classes have no records ( 9.site.one, 10.site.one, 1.site.three,
+## 2.site.three ) and these will be ignored
+
+## Warning in createDataPartition(df$interaction, p = 0.5, times = 1, list =
+## FALSE): Some classes have a single record ( 3.site.three ) and these will be
+## selected for the sample
+</code></pre></div></div>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span><span class="o">$</span><span class="n">train</span><span class="o">&lt;-</span><span class="kc">FALSE</span><span class="w">
+</span><span class="n">df</span><span class="o">$</span><span class="n">train</span><span class="p">[</span><span class="n">trainIndex</span><span class="p">]</span><span class="o">&lt;-</span><span class="kc">TRUE</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Let’s use some plots to verify:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">histbysite</span><span class="o">&lt;-</span><span class="k">function</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">xvar</span><span class="o">=</span><span class="s2">"i"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">ggplot</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">aes_string</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">xvar</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">geom_histogram</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">facet_grid</span><span class="p">(</span><span class="o">~</span><span class="n">site</span><span class="p">)</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">histbysite</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Whole Sample"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-4-1.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">histbysite</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">$</span><span class="n">train</span><span class="p">,])</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Training"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-4-2.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">histbysite</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="o">!</span><span class="n">df</span><span class="o">$</span><span class="n">train</span><span class="p">,])</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Test"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-4-3.png" alt="" /><!-- --></p>
+
+<h1 id="many-factors">Many factors</h1>
+
+<h2 id="simulate">Simulate</h2>
+
+<p>Let’s simulate some other factors to add to our test dataset.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">simdef</span><span class="o">&lt;-</span><span class="n">defData</span><span class="p">(</span><span class="n">varname</span><span class="o">=</span><span class="s2">"age"</span><span class="p">,</span><span class="w">
+                </span><span class="n">dist</span><span class="o">=</span><span class="s2">"categorical"</span><span class="p">,</span><span class="w">
+                </span><span class="n">formula</span><span class="o">=</span><span class="n">genCatFormula</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="m">5</span><span class="p">))</span><span class="w">
+</span><span class="n">simdef</span><span class="o">&lt;-</span><span class="n">defData</span><span class="p">(</span><span class="n">simdef</span><span class="p">,</span><span class="n">varname</span><span class="o">=</span><span class="s2">"sex"</span><span class="p">,</span><span class="w">
+                </span><span class="n">dist</span><span class="o">=</span><span class="s2">"binary"</span><span class="p">,</span><span class="w">
+                </span><span class="n">formula</span><span class="o">=</span><span class="s2">".5"</span><span class="p">)</span><span class="w">
+</span><span class="n">simdef</span><span class="o">&lt;-</span><span class="n">defData</span><span class="p">(</span><span class="n">simdef</span><span class="p">,</span><span class="n">varname</span><span class="o">=</span><span class="s2">"parent.ed"</span><span class="p">,</span><span class="w">
+                </span><span class="n">dist</span><span class="o">=</span><span class="s2">"categorical"</span><span class="p">,</span><span class="w">
+                </span><span class="n">formula</span><span class="o">=</span><span class="n">genCatFormula</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="m">6</span><span class="p">))</span><span class="w">
+</span><span class="n">simdef</span><span class="o">&lt;-</span><span class="n">defData</span><span class="p">(</span><span class="n">simdef</span><span class="p">,</span><span class="n">varname</span><span class="o">=</span><span class="s2">"missingdata"</span><span class="p">,</span><span class="w">
+                </span><span class="n">dist</span><span class="o">=</span><span class="s2">"binary"</span><span class="p">,</span><span class="w">
+                </span><span class="n">formula</span><span class="o">=</span><span class="s2">".2"</span><span class="p">)</span><span class="w">
+
+</span><span class="n">df2</span><span class="o">&lt;-</span><span class="n">cbind</span><span class="p">(</span><span class="n">df</span><span class="p">[,</span><span class="m">1</span><span class="o">:</span><span class="m">3</span><span class="p">],</span><span class="n">genData</span><span class="p">(</span><span class="n">nrow</span><span class="p">(</span><span class="n">df</span><span class="p">),</span><span class="n">simdef</span><span class="p">))</span><span class="w"> </span><span class="c1"># drop interaction</span><span class="w">
+</span><span class="n">df2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">df2</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+  </span><span class="n">select</span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">everything</span><span class="p">())</span><span class="w"> </span><span class="c1"># put id at the front of the dataset</span><span class="w">
+
+</span><span class="n">factorialize</span><span class="o">&lt;-</span><span class="nf">c</span><span class="p">(</span><span class="s2">"i.bin"</span><span class="p">,</span><span class="s2">"age"</span><span class="p">,</span><span class="s2">"sex"</span><span class="p">,</span><span class="s2">"missingdata"</span><span class="p">,</span><span class="s2">"parent.ed"</span><span class="p">)</span><span class="w">
+</span><span class="n">df2</span><span class="p">[</span><span class="n">factorialize</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">lapply</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="n">factorialize</span><span class="p">],</span><span class="w"> </span><span class="n">factor</span><span class="p">)</span><span class="w">
+
+</span><span class="n">pander</span><span class="p">(</span><span class="n">head</span><span class="p">(</span><span class="n">df2</span><span class="p">))</span><span class="w">
+</span></code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">id</th>
+      <th style="text-align: center">i</th>
+      <th style="text-align: center">site</th>
+      <th style="text-align: center">i.bin</th>
+      <th style="text-align: center">age</th>
+      <th style="text-align: center">sex</th>
+      <th style="text-align: center">parent.ed</th>
+      <th style="text-align: center">missingdata</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">-1.504</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">0</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">2</td>
+      <td style="text-align: center">-1.031</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">2</td>
+      <td style="text-align: center">5</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">0</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">-0.8683</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">5</td>
+      <td style="text-align: center">0</td>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">0</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">-1.119</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">2</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">1</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">5</td>
+      <td style="text-align: center">-0.4916</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">5</td>
+      <td style="text-align: center">0</td>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">1</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">6</td>
+      <td style="text-align: center">-0.4953</td>
+      <td style="text-align: center">site.one</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">5</td>
+      <td style="text-align: center">1</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Then we partition as above:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df2</span><span class="o">$</span><span class="n">interaction</span><span class="o">=</span><span class="n">interaction</span><span class="p">(</span><span class="n">df2</span><span class="p">[,</span><span class="o">-</span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="m">2</span><span class="p">)])</span><span class="w">
+</span><span class="n">trainIndex</span><span class="o">&lt;-</span><span class="n">createDataPartition</span><span class="p">(</span><span class="n">df2</span><span class="o">$</span><span class="n">interaction</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="m">.5</span><span class="p">,</span><span class="n">times</span><span class="o">=</span><span class="m">1</span><span class="p">,</span><span class="n">list</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## Warning in createDataPartition(df2$interaction, p = 0.5, times = 1,
+## list = FALSE): Some classes have no records ( site.three.1.1.0.1.0,
+## site.three.2.1.0.1.0, site.three.3.1.0.1.0, site.three.4.1.0.1.0,
+## site.three.6.1.0.1.0, site.one.7.1.0.1.0, site.one.8.1.0.1.0,
+## site.one.9.1.0.1.0, site.one.10.1.0.1.0, site.three.1.2.0.1.0,
+## site.three.2.2.0.1.0, site.three.3.2.0.1.0, site.one.4.2.0.1.0,
+## site.three.4.2.0.1.0, site.one.7.2.0.1.0, site.one.8.2.0.1.0,
+## site.one.9.2.0.1.0, site.one.10.2.0.1.0, site.three.1.3.0.1.0,
+## site.three.2.3.0.1.0, site.three.3.3.0.1.0, site.three.4.3.0.1.0,
+## site.one.8.3.0.1.0, site.one.9.3.0.1.0, site.one.10.3.0.1.0,
+## site.three.10.3.0.1.0, site.three.1.4.0.1.0, site.three.2.4.0.1.0,
+## site.three.4.4.0.1.0, site.three.5.4.0.1.0, site.one.9.4.0.1.0,
+## site.one.10.4.0.1.0, site.three.1.5.0.1.0, site.three.2.5.0.1.0,
+## site.three.3.5.0.1.0, site.three.4.5.0.1.0, site.three.5.5.0.1.0,
+## site.one.9.5.0.1.0, site.one.10.5.0.1.0, site.three.1.1.1.1.0,
+## site.three.2.1.1.1.0, site.three.3.1.1.1.0, site.three.4.1.1.1.0,
+## site.one.7.1.1.1.0, site.one.9.1.1.1.0, site.one.10.1.1.1.0,
+## site.three.1.2.1.1.0, site.three.2.2.1.1.0, site.three.3.2.1.1.0,
+## site.two.3.2.1.1.0, site.three.4.2.1.1.0, site.three.5.2.1.1.0,
+## site.one.9.2.1.1.0, site.one.10.2.1.1.0, site.three.1.3.1.1.0,
+## site.three.2.3.1.1.0, site.three.3.3.1.1.0, site.three.4.3.1.1.0,
+## site.three.5.3.1.1.0, site.three.6.3.1.1.0, site.one.7.3.1.1.0,
+## site.three.7.3.1.1.0, site.one.8.3.1.1.0, site.one.9.3.1.1.0,
+## site.one.10.3.1.1.0, site.three.1.4.1.1.0, site.three.2.4.1.1.0,
+## site.three.3.4.1.1.0, site.three.4.4.1.1.0, site.one.8.4.1.1.0,
+## site.one.9.4.1.1.0, site.one.10.4.1.1.0, site.three.1.5.1.1.0,
+## site.three.2.5.1.1.0, site.three.3.5.1.1.0, site.three.4.5.1.1.0,
+## site.two.4.5.1.1.0, site.three.5.5.1.1.0, site.one.6.5.1.1.0,
+## site.three.6.5.1.1.0, site.one.7.5.1.1.0, site.one.8.5.1.1.0,
+## site.one.9.5.1.1.0, site.one.10.5.1.1.0, site.three.1.1.0.2.0,
+## site.three.2.1.0.2.0, site.three.3.1.0.2.0, site.three.4.1.0.2.0,
+## site.three.5.1.0.2.0, site.one.7.1.0.2.0, site.one.8.1.0.2.0,
+## site.one.9.1.0.2.0, site.one.10.1.0.2.0, site.three.1.2.0.2.0,
+## site.three.2.2.0.2.0, site.three.3.2.0.2.0, site.three.4.2.0.2.0,
+## site.one.7.2.0.2.0, site.one.8.2.0.2.0, site.one.9.2.0.2.0,
+## site.one.10.2.0.2.0, site.three.1.3.0.2.0, site.three.2.3.0.2.0,
+## site.three.3.3.0.2.0, site.three.4.3.0.2.0, site.three.5.3.0.2.0,
+## site.three.6.3.0.2.0, site.one.9.3.0.2.0, site.one.10.3.0.2.0,
+## site.three.1.4.0.2.0, site.three.2.4.0.2.0, site.three.3.4.0.2.0,
+## site.three.4.4.0.2.0, site.one.5.4.0.2.0, site.three.5.4.0.2.0,
+## site.one.7.4.0.2.0, site.one.8.4.0.2.0, site.one.9.4.0.2.0, site.one.10.4.0.2.0,
+## site.three.1.5.0.2.0, site.three.2.5.0.2.0, site.three.3.5.0.2.0,
+## site.three.5.5.0.2.0, site.three.6.5.0.2.0, site.one.7.5.0.2.0,
+## site.one.8.5.0.2.0, site.one.9.5.0.2.0, site.one.10.5.0.2.0,
+## site.three.1.1.1.2.0, site.three.2.1.1.2.0, site.three.3.1.1.2.0,
+## site.three.4.1.1.2.0, site.three.5.1.1.2.0, site.three.6.1.1.2.0,
+## site.one.8.1.1.2.0, site.one.9.1.1.2.0, site.one.10.1.1.2.0,
+## site.three.1.2.1.2.0, site.three.2.2.1.2.0, site.three.3.2.1.2.0,
+## site.three.4.2.1.2.0, site.three.5.2.1.2.0, site.three.6.2.1.2.0,
+## site.one.8.2.1.2.0, site.one.9.2.1.2.0, site.one.10.2.1.2.0,
+## site.three.1.3.1.2.0, site.three.2.3.1.2.0, site.three.3.3.1.2.0,
+## site.three.4.3.1.2.0, site.three.6.3.1.2.0, site.one.7.3.1.2.0,
+## site.one.9.3.1.2.0, site.one.10.3.1.2.0, site.three.1.4.1.2.0,
+## site.three.2.4.1.2.0, site.three.3.4.1.2.0, site.one.7.4.1.2.0,
+## site.one.9.4.1.2.0, site.one.10.4.1.2.0, site.three.1.5.1.2.0,
+## site.three.2.5.1.2.0, site.three.3.5.1.2.0, site.three.4.5.1.2.0,
+## site.three.5.5.1.2.0, site.one.6.5.1.2.0, site.one.8.5.1.2.0,
+## site.one.9.5.1.2.0, site.one.10.5.1.2.0, site.three.1.1.0.3.0,
+## site.three.2.1.0.3.0, site.three.3.1.0.3.0, site.three.4.1.0.3.0,
+## site.three.5.1.0.3.0, site.one.8.1.0.3.0, site.one.9.1.0.3.0,
+## site.one.10.1.0.3.0, site.three.1.2.0.3.0, site.three.2.2.0.3.0,
+## site.three.3.2.0.3.0, site.three.5.2.0.3.0, site.one.8.2.0.3.0,
+## site.one.9.2.0.3.0, site.one.10.2.0.3.0, site.one.1.3.0.3.0,
+## site.three.1.3.0.3.0, site.three.2.3.0.3.0, site.three.3.3.0.3.0,
+## site.three.4.3.0.3.0, site.three.5.3.0.3.0, site.one.8.3.0.3.0,
+## site.one.9.3.0.3.0, site.one.10.3.0.3.0, site.three.1.4.0.3.0,
+## site.three.2.4.0.3.0, site.three.3.4.0.3.0, site.three.4.4.0.3.0,
+## site.three.5.4.0.3.0, site.one.7.4.0.3.0, site.three.7.4.0.3.0,
+## site.one.8.4.0.3.0, site.one.9.4.0.3.0, site.one.10.4.0.3.0,
+## site.three.1.5.0.3.0, site.three.2.5.0.3.0, site.three.3.5.0.3.0,
+## site.three.4.5.0.3.0, site.three.5.5.0.3.0, site.three.6.5.0.3.0,
+## site.one.9.5.0.3.0, site.one.10.5.0.3.0, site.three.1.1.1.3.0,
+## site.three.2.1.1.3.0, site.three.3.1.1.3.0, site.three.4.1.1.3.0,
+## site.three.5.1.1.3.0, site.one.7.1.1.3.0, site.one.9.1.1.3.0,
+## site.one.10.1.1.3.0, site.three.1.2.1.3.0, site.three.2.2.1.3.0,
+## site.three.3.2.1.3.0, site.three.4.2.1.3.0, site.three.5.2.1.3.0,
+## site.one.9.2.1.3.0, site.one.10.2.1.3.0, site.three.1.3.1.3.0,
+## site.three.2.3.1.3.0, site.three.3.3.1.3.0, site.three.4.3.1.3.0,
+## site.three.5.3.1.3.0, site.three.6.3.1.3.0, site.three.7.3.1.3.0,
+## site.one.9.3.1.3.0, site.one.10.3.1.3.0, site.three.1.4.1.3.0,
+## site.three.2.4.1.3.0, site.three.3.4.1.3.0, site.three.4.4.1.3.0,
+## site.three.5.4.1.3.0, site.one.7.4.1.3.0, site.one.8.4.1.3.0,
+## site.one.9.4.1.3.0, site.one.10.4.1.3.0, site.three.10.4.1.3.0,
+## site.three.1.5.1.3.0, site.three.2.5.1.3.0, site.three.3.5.1.3.0,
+## site.three.5.5.1.3.0, site.one.6.5.1.3.0, site.three.6.5.1.3.0,
+## site.one.8.5.1.3.0, site.one.9.5.1.3.0, site.one.10.5.1.3.0,
+## site.three.1.1.0.4.0, site.three.2.1.0.4.0, site.three.3.1.0.4.0,
+## site.three.4.1.0.4.0, site.three.5.1.0.4.0, site.three.6.1.0.4.0,
+## site.one.8.1.0.4.0, site.one.9.1.0.4.0, site.one.10.1.0.4.0,
+## site.three.1.2.0.4.0, site.three.2.2.0.4.0, site.three.3.2.0.4.0,
+## site.three.4.2.0.4.0, site.three.5.2.0.4.0, site.one.8.2.0.4.0,
+## site.one.9.2.0.4.0, site.one.10.2.0.4.0, site.three.1.3.0.4.0,
+## site.three.2.3.0.4.0, site.three.3.3.0.4.0, site.one.4.3.0.4.0,
+## site.three.4.3.0.4.0, site.one.9.3.0.4.0, site.one.10.3.0.4.0,
+## site.three.1.4.0.4.0, site.three.2.4.0.4.0, site.three.3.4.0.4.0,
+## site.three.4.4.0.4.0, site.one.7.4.0.4.0, site.one.8.4.0.4.0,
+## site.one.9.4.0.4.0, site.one.10.4.0.4.0, site.three.1.5.0.4.0,
+## site.three.2.5.0.4.0, site.three.3.5.0.4.0, site.three.4.5.0.4.0,
+## site.one.8.5.0.4.0, site.one.9.5.0.4.0, site.one.10.5.0.4.0,
+## site.three.1.1.1.4.0, site.three.2.1.1.4.0, site.three.3.1.1.4.0,
+## site.three.4.1.1.4.0, site.three.5.1.1.4.0, site.one.6.1.1.4.0,
+## site.three.7.1.1.4.0, site.one.8.1.1.4.0, site.one.9.1.1.4.0,
+## site.one.10.1.1.4.0, site.three.1.2.1.4.0, site.three.2.2.1.4.0,
+## site.three.3.2.1.4.0, site.three.4.2.1.4.0, site.three.6.2.1.4.0,
+## site.one.7.2.1.4.0, site.one.8.2.1.4.0, site.one.9.2.1.4.0, site.one.10.2.1.4.0,
+## site.three.1.3.1.4.0, site.three.2.3.1.4.0, site.three.3.3.1.4.0,
+## site.one.8.3.1.4.0, site.three.8.3.1.4.0, site.one.9.3.1.4.0,
+## site.one.10.3.1.4.0, site.three.1.4.1.4.0, site.three.2.4.1.4.0,
+## site.three.3.4.1.4.0, site.three.4.4.1.4.0, site.one.6.4.1.4.0,
+## site.three.6.4.1.4.0, site.one.8.4.1.4.0, site.one.9.4.1.4.0,
+## site.one.10.4.1.4.0, site.three.1.5.1.4.0, site.three.2.5.1.4.0,
+## site.three.3.5.1.4.0, site.three.4.5.1.4.0, site.one.7.5.1.4.0,
+## site.one.8.5.1.4.0, site.one.9.5.1.4.0, site.one.10.5.1.4.0,
+## site.three.1.1.0.5.0, site.three.2.1.0.5.0, site.three.3.1.0.5.0,
+## site.three.4.1.0.5.0, site.one.6.1.0.5.0, site.one.9.1.0.5.0,
+## site.one.10.1.0.5.0, site.three.1.2.0.5.0, site.three.2.2.0.5.0,
+## site.three.3.2.0.5.0, site.three.4.2.0.5.0, site.three.6.2.0.5.0,
+## site.one.8.2.0.5.0, site.one.9.2.0.5.0, site.one.10.2.0.5.0,
+## site.three.1.3.0.5.0, site.three.2.3.0.5.0, site.three.3.3.0.5.0,
+## site.three.4.3.0.5.0, site.one.8.3.0.5.0, site.three.8.3.0.5.0,
+## site.one.9.3.0.5.0, site.one.10.3.0.5.0, site.three.1.4.0.5.0,
+## site.three.2.4.0.5.0, site.three.3.4.0.5.0, site.three.4.4.0.5.0,
+## site.three.5.4.0.5.0, site.one.8.4.0.5.0, site.one.9.4.0.5.0,
+## site.one.10.4.0.5.0, site.three.1.5.0.5.0, site.three.2.5.0.5.0,
+## site.three.3.5.0.5.0, site.three.4.5.0.5.0, site.one.9.5.0.5.0,
+## site.one.10.5.0.5.0, site.three.1.1.1.5.0, site.three.2.1.1.5.0,
+## site.three.3.1.1.5.0, site.three.5.1.1.5.0, site.one.8.1.1.5.0,
+## site.one.9.1.1.5.0, site.one.10.1.1.5.0, site.three.1.2.1.5.0,
+## site.three.2.2.1.5.0, site.three.3.
+
+## Warning in createDataPartition(df2$interaction, p = 0.5, times = 1,
+## list = FALSE): Some classes have a single record ( site.three.5.1.0.1.0,
+## site.three.8.1.0.1.0, site.one.6.2.0.1.0, site.three.6.2.0.1.0,
+## site.three.5.3.0.1.0, site.three.8.3.0.1.0, site.three.3.4.0.1.0,
+## site.one.6.4.0.1.0, site.three.6.4.0.1.0, site.one.7.4.0.1.0,
+## site.one.8.4.0.1.0, site.three.9.4.0.1.0, site.one.8.5.0.1.0,
+## site.three.6.1.1.1.0, site.one.8.1.1.1.0, site.one.2.2.1.1.0,
+## site.two.4.2.1.1.0, site.one.6.2.1.1.0, site.one.7.2.1.1.0,
+## site.one.8.2.1.1.0, site.one.1.3.1.1.0, site.three.10.3.1.1.0,
+## site.two.4.4.1.1.0, site.one.6.4.1.1.0, site.one.7.4.1.1.0,
+## site.two.1.5.1.1.0, site.three.7.5.1.1.0, site.three.9.5.1.1.0,
+## site.three.10.5.1.1.0, site.three.6.1.0.2.0, site.three.7.1.0.2.0,
+## site.two.3.2.0.2.0, site.three.5.2.0.2.0, site.three.10.2.0.2.0,
+## site.one.5.3.0.2.0, site.one.8.3.0.2.0, site.three.9.4.0.2.0,
+## site.three.4.5.0.2.0, site.one.6.5.0.2.0, site.one.4.1.1.2.0,
+## site.one.7.1.1.2.0, site.three.7.1.1.2.0, site.one.7.2.1.2.0,
+## site.three.8.2.1.2.0, site.three.7.3.1.2.0, site.one.8.3.1.2.0,
+## site.two.2.4.1.2.0, site.three.4.4.1.2.0, site.three.5.4.1.2.0,
+## site.three.6.4.1.2.0, site.two.3.5.1.2.0, site.one.7.5.1.2.0,
+## site.three.7.5.1.2.0, site.two.8.5.1.2.0, site.three.9.5.1.2.0,
+## site.one.5.1.0.3.0, site.three.6.1.0.3.0, site.three.10.1.0.3.0,
+## site.one.6.2.0.3.0, site.three.6.2.0.3.0, site.three.8.2.0.3.0,
+## site.three.10.2.0.3.0, site.one.7.3.0.3.0, site.three.6.4.0.3.0,
+## site.three.8.4.0.3.0, site.two.2.5.0.3.0, site.one.8.5.0.3.0,
+## site.two.8.5.0.3.0, site.three.9.1.1.3.0, site.one.8.2.1.3.0,
+## site.one.8.3.1.3.0, site.two.2.4.1.3.0, site.three.6.4.1.3.0,
+## site.three.4.5.1.3.0, site.one.5.5.1.3.0, site.three.7.5.1.3.0,
+## site.three.8.5.1.3.0, site.one.6.1.0.4.0, site.one.7.1.0.4.0,
+## site.three.5.3.0.4.0, site.one.6.3.0.4.0, site.three.6.3.0.4.0,
+## site.one.8.3.0.4.0, site.two.3.4.0.4.0, site.three.5.4.0.4.0,
+## site.three.6.4.0.4.0, site.three.5.5.0.4.0, site.three.10.1.1.4.0,
+## site.three.5.2.1.4.0, site.one.6.2.1.4.0, site.three.4.3.1.4.0,
+## site.three.6.3.1.4.0, site.one.7.3.1.4.0, site.two.7.3.1.4.0,
+## site.three.5.4.1.4.0, site.three.8.4.1.4.0, site.three.9.4.1.4.0,
+## site.two.4.5.1.4.0, site.three.5.5.1.4.0, site.one.8.1.0.5.0,
+## site.three.5.2.0.5.0, site.one.7.2.0.5.0, site.three.7.2.0.5.0,
+## site.three.10.2.0.5.0, site.three.5.3.0.5.0, site.one.7.3.0.5.0,
+## site.one.5.4.0.5.0, site.one.6.4.0.5.0, site.three.6.4.0.5.0,
+## site.three.5.5.0.5.0, site.one.8.5.0.5.0, site.three.10.5.0.5.0,
+## site.one.3.1.1.5.0, site.three.4.1.1.5.0, site.one.7.1.1.5.0,
+## site.one.1.2.1.5.0, site.three.4.2.1.5.0, site.one.6.2.1.5.0,
+## site.three.6.2.1.5.0, site.one.7.2.1.5.0, site.three.7.2.1.5.0,
+## site.one.8.2.1.5.0, site.three.6.3.1.5.0, site.three.5.4.1.5.0,
+## site.three.6.4.1.5.0, site.three.8.4.1.5.0, site.three.9.4.1.5.0,
+## site.three.4.5.1.5.0, site.three.7.5.1.5.0, site.three.8.5.1.5.0,
+## site.one.3.1.0.6.0, site.one.5.1.0.6.0, site.three.5.1.0.6.0,
+## site.one.8.1.0.6.0, site.three.10.1.0.6.0, site.three.5.2.0.6.0,
+## site.one.7.2.0.6.0, site.one.8.2.0.6.0, site.one.3.3.0.6.0,
+## site.one.7.3.0.6.0, site.one.5.4.0.6.0, site.three.5.4.0.6.0,
+## site.three.5.5.0.6.0, site.two.3.1.1.6.0, site.one.5.1.1.6.0,
+## site.three.6.1.1.6.0, site.three.8.1.1.6.0, site.one.7.2.1.6.0,
+## site.three.7.2.1.6.0, site.one.7.3.1.6.0, site.three.4.4.1.6.0,
+## site.three.6.4.1.6.0, site.one.7.4.1.6.0, site.two.3.5.1.6.0,
+## site.one.3.1.0.1.1, site.three.5.1.0.1.1, site.three.6.1.0.1.1,
+## site.two.6.1.0.1.1, site.one.7.1.0.1.1, site.three.8.1.0.1.1,
+## site.two.9.1.0.1.1, site.one.1.2.0.1.1, site.one.2.2.0.1.1, site.one.6.2.0.1.1,
+## site.three.7.2.0.1.1, site.two.7.2.0.1.1, site.two.8.2.0.1.1,
+## site.two.9.2.0.1.1, site.three.10.2.0.1.1, site.three.4.3.0.1.1,
+## site.one.5.3.0.1.1, site.one.6.3.0.1.1, site.three.7.3.0.1.1,
+## site.two.7.3.0.1.1, site.two.8.3.0.1.1, site.three.10.3.0.1.1,
+## site.two.1.4.0.1.1, site.two.2.4.0.1.1, site.two.6.4.0.1.1, site.one.7.4.0.1.1,
+## site.three.8.4.0.1.1, site.two.8.4.0.1.1, site.three.9.4.0.1.1,
+## site.three.10.4.0.1.1, site.two.10.4.0.1.1, site.two.3.5.0.1.1,
+## site.one.4.5.0.1.1, site.one.5.5.0.1.1, site.two.5.5.0.1.1,
+## site.three.7.5.0.1.1, site.two.7.5.0.1.1, site.two.8.5.0.1.1,
+## site.one.1.1.1.1.1, site.two.1.1.1.1.1, site.two.2.1.1.1.1, site.two.3.1.1.1.1,
+## site.one.6.1.1.1.1, site.three.8.1.1.1.1, site.three.9.1.1.1.1,
+## site.three.10.1.1.1.1, site.two.10.1.1.1.1, site.one.5.2.1.1.1,
+## site.three.5.2.1.1.1, site.two.6.2.1.1.1, site.two.8.2.1.1.1,
+## site.two.10.2.1.1.1, site.two.1.3.1.1.1, site.two.2.3.1.1.1,
+## site.one.3.3.1.1.1, site.one.5.3.1.1.1, site.two.5.3.1.1.1, site.one.7.3.1.1.1,
+## site.two.7.3.1.1.1, site.three.8.3.1.1.1, site.two.8.3.1.1.1,
+## site.three.9.3.1.1.1, site.two.9.3.1.1.1, site.one.2.4.1.1.1,
+## site.two.2.4.1.1.1, site.one.3.4.1.1.1, site.two.4.4.1.1.1, site.two.5.4.1.1.1,
+## site.two.6.4.1.1.1, site.three.8.4.1.1.1, site.three.9.4.1.1.1,
+## site.two.9.4.1.1.1, site.one.2.5.1.1.1, site.two.6.5.1.1.1, site.one.7.5.1.1.1,
+## site.three.7.5.1.1.1, site.three.9.5.1.1.1, site.two.9.5.1.1.1,
+## site.three.10.5.1.1.1, site.one.1.1.0.2.1, site.two.2.1.0.2.1,
+## site.two.4.1.0.2.1, site.one.5.1.0.2.1, site.three.6.1.0.2.1,
+## site.two.6.1.0.2.1, site.two.9.1.0.2.1, site.one.2.2.0.2.1, site.one.5.2.0.2.1,
+## site.three.6.2.0.2.1, site.two.6.2.0.2.1, site.three.7.2.0.2.1,
+## site.two.9.2.0.2.1, site.one.1.3.0.2.1, site.one.3.3.0.2.1, site.two.3.3.0.2.1,
+## site.one.4.3.0.2.1, site.three.6.3.0.2.1, site.three.7.3.0.2.1,
+## site.two.7.3.0.2.1, site.three.8.3.0.2.1, site.two.10.3.0.2.1,
+## site.two.1.4.0.2.1, site.one.3.4.0.2.1, site.two.4.4.0.2.1, site.one.5.4.0.2.1,
+## site.two.5.4.0.2.1, site.one.6.4.0.2.1, site.three.7.4.0.2.1,
+## site.one.8.4.0.2.1, site.one.1.5.0.2.1, site.two.1.5.0.2.1, site.one.2.5.0.2.1,
+## site.one.3.5.0.2.1, site.one.4.5.0.2.1, site.three.5.5.0.2.1,
+## site.two.5.5.0.2.1, site.three.7.5.0.2.1, site.two.7.5.0.2.1,
+## site.two.8.5.0.2.1, site.three.9.5.0.2.1, site.one.1.1.1.2.1,
+## site.two.5.1.1.2.1, site.one.6.1.1.2.1, site.one.7.1.1.2.1,
+## site.three.9.1.1.2.1, site.two.9.1.1.2.1, site.three.10.1.1.2.1,
+## site.one.1.2.1.2.1, site.two.1.2.1.2.1, site.two.2.2.1.2.1, site.two.3.2.1.2.1,
+## site.one.5.2.1.2.1, site.two.6.2.1.2.1, site.three.7.2.1.2.1,
+## site.two.8.2.1.2.1, site.three.10.2.1.2.1, site.two.10.2.1.2.1,
+## site.one.1.3.1.2.1, site.one.2.3.1.2.1, site.two.3.3.1.2.1,
+## site.one.4.3.1.2.1, site.two.4.3.1.2.1, site.one.6.3.1.2.1, site.two.7.3.1.2.1,
+## site.two.8.3.1.2.1, site.three.9.3.1.2.1, site.one.1.4.1.2.1,
+## site.one.2.4.1.2.1, site.two.2.4.1.2.1, site.two.3.4.1.2.1, site.one.5.4.1.2.1,
+## site.one.6.4.1.2.1, site.two.6.4.1.2.1, site.three.8.4.1.2.1,
+## site.three.9.4.1.2.1, site.two.10.4.1.2.1, site.two.3.5.1.2.1,
+## site.two.4.5.1.2.1, site.one.5.5.1.2.1, site.two.5.5.1.2.1, site.two.9.5.1.2.1,
+## site.two.10.5.1.2.1, site.two.2.1.0.3.1, site.two.3.1.0.3.1,
+## site.one.4.1.0.3.1, site.two.4.1.0.3.1, site.two.5.1.0.3.1, site.one.7.1.0.3.1,
+## site.three.7.1.0.3.1, site.two.9.1.0.3.1, site.two.1.2.0.3.1,
+## site.one.2.2.0.3.1, site.two.5.2.0.3.1, site.three.7.2.0.3.1,
+## site.two.7.2.0.3.1, site.two.9.2.0.3.1, site.two.1.3.0.3.1,
+## site.two.5.3.0.3.1, site.two.7.3.0.3.1, site.two.8.3.0.3.1, site.two.9.3.0.3.1,
+## site.two.2.4.0.3.1, site.one.3.4.0.3.1, site.two.4.4.0.3.1, site.one.8.4.0.3.1,
+## site.two.9.4.0.3.1, site.one.4.5.0.3.1, site.three.5.5.0.3.1,
+## site.three.6.5.0.3.1, site.one.8.5.0.3.1, site.three.8.5.0.3.1,
+## site.two.3.1.1.3.1, site.two.9.1.1.3.1, site.one.1.2.1.3.1, site.two.1.2.1.3.1,
+## site.two.3.2.1.3.1, site.three.5.2.1.3.1, site.three.8.2.1.3.1,
+## site.two.1.3.1.3.1, site.one.2.3.1.3.1, site.two.3.3.1.3.1, site.one.4.3.1.3.1,
+## site.two.4.3.1.3.1, site.three.5.3.1.3.1, site.two.5.3.1.3.1,
+## site.one.6.3.1.3.1, site.two.6.3.1.3.1, site.three.7.3.1.3.1,
+## site.two.8.3.1.3.1, site.two.9.3.1.3.1, site.one.1.4.1.3.1,
+## site.two.1.4.1.3.1, site.two.2.4.1.3.1, site.one.3.4.1.3.1, site.two.3.4.1.3.1,
+## site.one.4.4.1.3.1, site.one.5.4.1.3.1, site.one.6.4.1.3.1, site.two.6.4.1.3.1,
+## site.one.7.4.1.3.1, site.three.9.4.1.3.1, site.two.9.4.1.3.1,
+## site.one.1.5.1.3.1, site.one.4.5.1.3.1, site.two.4.5.1.3.1, site.one.5.5.1.3.1,
+## site.two.9.5.1.3.1, site.one.1.1.0.4.1, site.two.2.1.0.4.1, site.two.5.1.0.4.1,
+## site.three.6.1.0.4.1, site.three.9.1.0.4.1, site.two.10.1.0.4.1,
+## site.one.1.2.0.4.1, site.two.1.2.0.4.1, site.one.2.2.0.4.1, site.one.3.2.0.4.1,
+## site.two.3.2.0.4.1, site.two.4.2.0.4.1, site
+</code></pre></div></div>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="o">&lt;-</span><span class="kc">FALSE</span><span class="w">
+</span><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="p">[</span><span class="n">trainIndex</span><span class="p">]</span><span class="o">&lt;-</span><span class="kc">TRUE</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Testing:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">histbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"i in Whole Sample"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-1.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">histbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="p">,])</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"i in Training"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-2.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">histbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="o">!</span><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="p">,])</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"i in Test"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-3.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">barbysite</span><span class="o">&lt;-</span><span class="k">function</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">xvar</span><span class="o">=</span><span class="s2">"i"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">ggplot</span><span class="p">(</span><span class="n">plotdata</span><span class="p">,</span><span class="n">aes_string</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">xvar</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">geom_bar</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w">
+        </span><span class="n">facet_grid</span><span class="p">(</span><span class="o">~</span><span class="n">site</span><span class="p">)</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">barbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span><span class="s2">"age"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Age in Whole Sample"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-4.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">barbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="p">,],</span><span class="s2">"age"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Age in Training"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-5.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">barbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="o">!</span><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="p">,],</span><span class="s2">"age"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Age in Test"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-6.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">barbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span><span class="s2">"missingdata"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"missingdata in Whole Sample"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-7.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">barbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="p">,],</span><span class="s2">"missingdata"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"missingdata in Training"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-8.png" alt="" /><!-- --></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">barbysite</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="o">!</span><span class="n">df2</span><span class="o">$</span><span class="n">train</span><span class="p">,],</span><span class="s2">"missingdata"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"missingdata in Test"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/img/BalancedSamplingTest/unnamed-chunk-7-9.png" alt="" /><!-- --></p>]]></content><author><name>Matthew Peverill</name></author><summary type="html"><![CDATA[This is an example of splitting a sample in two preserving the balance of several variables in R.]]></summary></entry><entry><title type="html">My Workflow for Posting to Jekyll using Rmarkdown</title><link href="https://matthewpeverill.com/blog/2022/RmarkdownToJekyll/" rel="alternate" type="text/html" title="My Workflow for Posting to Jekyll using Rmarkdown" /><published>2022-06-21T12:40:00-05:00</published><updated>2022-06-21T12:40:00-05:00</updated><id>https://matthewpeverill.com/blog/2022/RmarkdownToJekyll</id><content type="html" xml:base="https://matthewpeverill.com/blog/2022/RmarkdownToJekyll/"><![CDATA[<p>A lot has been written about writing Jekyll (the platform that generates this website – it’s frequently used with github pages), but I haven’t seen a one size fits all solution. This is how I’m doing it (thanks to <a href="https://jchellmuth.com/news/jekyll/website/code/2020/01/04/Rmarkdown-posts-to-Jekyll.html">Johannes Hellmuth</a> for getting me started)</p>
+
+<p>The magic happens in the yaml header of your rmarkdown file. Here’s the header from <a href="/blog/2022/BalancedSamplingTest/">a recent post</a>:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">layout</span><span class="pi">:</span> <span class="s">post</span>
+<span class="na">title</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Splitting</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">Sample</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">Two</span><span class="nv"> </span><span class="s">Balancing</span><span class="nv"> </span><span class="s">Factors"</span>
+<span class="na">author</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Matthew</span><span class="nv"> </span><span class="s">Peverill"</span>
+<span class="na">date</span><span class="pi">:</span> <span class="s2">"</span><span class="s">`r</span><span class="nv"> </span><span class="s">Sys.Date()`"</span>
+<span class="na">output</span><span class="pi">:</span>
+  <span class="na">md_document</span><span class="pi">:</span>
+    <span class="na">variant</span><span class="pi">:</span> <span class="s">gfm</span>
+    <span class="na">preserve_yaml</span><span class="pi">:</span> <span class="kc">true</span>
+<span class="na">knit</span><span class="pi">:</span> <span class="s">(function(inputFile, encoding) {</span>
+    <span class="s">rmarkdown::render(inputFile,</span>
+                      <span class="s">encoding = encoding,</span>
+                      <span class="s">output_file = file.path(paste0(</span>
+                                                  <span class="s">"~/Dropbox/mrpeverill-website/_posts/",</span>
+                                                  <span class="s">Sys.Date(),</span>
+                                                  <span class="s">'-',</span>
+                                                  <span class="s">substr(basename(inputFile), 1, nchar(basename(inputFile)) - 4),</span>
+                                                  <span class="s">'.md'</span>
+                                                  <span class="s">)</span>
+                                              <span class="s">)</span>
+                      <span class="s">)</span>
+    <span class="s">})</span>
+<span class="nn">---</span>
+
+</code></pre></div></div>
+
+<p>In addition to the standard fields, you need to have everything that your Jekyll website will expect (in my case layout: post). Then preserve_yaml makes it so that those yaml fields get passed to the md that is built by rmarkdown. The ‘knit: ‘ is a hook for the rstudio ‘knit’ button that changes the output file to save an md file in the correct location for my website, with todays date as a prefix (which is the naming convention I use for posts).</p>
+
+<p>Then, in your setup block, include something like this:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">knitr</span><span class="o">::</span><span class="n">opts_knit</span><span class="o">$</span><span class="n">set</span><span class="p">(</span><span class="n">base.dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"~/Dropbox/mrpeverill-website/"</span><span class="p">,</span><span class="w"> </span><span class="n">base.url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"/"</span><span class="p">)</span><span class="w">
+</span><span class="n">knitr</span><span class="o">::</span><span class="n">opts_chunk</span><span class="o">$</span><span class="n">set</span><span class="p">(</span><span class="n">fig.path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"assets/img/BalancedSamplingTest/"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Obviously you will need to change the base.dir and fig.path as appropriate. base.dir needs to be absolute within your filesystem, fig.path needs to be relative to theh base.url. I like to store my images in a subfolder named after the post (because typically they just get named ‘unnamed chunk img 4-4’ or some such, which would conflict with other posts.</p>]]></content><author><name></name></author><summary type="html"><![CDATA[A lot has been written about writing Jekyll (the platform that generates this website – it’s frequently used with github pages), but I haven’t seen a one size fits all solution. This is how I’m doing it (thanks to Johannes Hellmuth for getting me started)]]></summary></entry><entry><title type="html">Concordance (Overlap) Plots in Freesurfer</title><link href="https://matthewpeverill.com/blog/2022/Concordance-Plots-In-Freesurfer/" rel="alternate" type="text/html" title="Concordance (Overlap) Plots in Freesurfer" /><published>2022-01-17T04:00:00-06:00</published><updated>2022-01-17T04:00:00-06:00</updated><id>https://matthewpeverill.com/blog/2022/Concordance-Plots-In-Freesurfer</id><content type="html" xml:base="https://matthewpeverill.com/blog/2022/Concordance-Plots-In-Freesurfer/"><![CDATA[<p>Recently I had cause to create a concordance plot in Freesurfer: I had two overlay files from an analysis and I wanted to plot the significant regions in two colors with the overlapping area depicted in a third color. I found strikingly little documentation on how to do this outside of rumors in the FreeSurfer list serve, so I wanted to briefly document how I got it done. <a href="https://pysurfer.github.io/auto_examples/plot_fmri_conjunction.html#sphx-glr-auto-examples-plot-fmri-conjunction-py">PySurfer is a great tool to use to do this</a>, but I was unable to get its dependencies working in our analysis environment.</p>
+
+<p>As a spoiler, here is a picture of the output visualized using a version of my quadfigures script:</p>
+
+<p><img src="/assets/img/convergence_inflated_quadfigure.png" alt="Lateral and Medial, Right and Left view of a brain surface with 3 color maps overlayed" /></p>
+
+<h1 id="how-to-make-the-figure">How to make the figure</h1>
+
+<p>The basic approach is as follows:</p>
+
+<ol>
+  <li>Using mri_binarize, make a mask of each of the overlays you want to depict. One should have masked voxels set to a value of 1, the other to 2.</li>
+  <li>Using fscalc, sum these in to a third overlay volume. Now you have a volume where each overlay and their convergence have a unique value.</li>
+  <li>Use mris_seg2annot, generate an overlay file from the combine volume as well using a color look up table you specify.</li>
+</ol>
+
+<p>Here is an example script:</p>
+
+<noscript><pre>400: Invalid request</pre></noscript>
+<script src="https://gist.github.com/e7ea405ce6bddd52f01ad8879034aab3.js"> </script>
+
+<p>I used a Cyan-Yellow-Magenta color scheme as it is <a href="https://www.ascb.org/science-news/how-to-make-scientific-figures-accessible-to-readers-with-color-blindness/">color-blind friendly</a>.</p>
+
+<p>Once the annotation file is generated, you can load it in freeview or tksurfer and work it in to a figure in whatever way you are used to. I use <a href="/blog/2018/freesurfer-snapshots-made-simpler/">my quadfigure script</a>.</p>]]></content><author><name></name></author><summary type="html"><![CDATA[Recently I had cause to create a concordance plot in Freesurfer: I had two overlay files from an analysis and I wanted to plot the significant regions in two colors with the overlapping area depicted in a third color. I found strikingly little documentation on how to do this outside of rumors in the FreeSurfer list serve, so I wanted to briefly document how I got it done. PySurfer is a great tool to use to do this, but I was unable to get its dependencies working in our analysis environment. As a spoiler, here is a picture of the output visualized using a version of my quadfigures script: How to make the figure The basic approach is as follows: Using mri_binarize, make a mask of each of the overlays you want to depict. One should have masked voxels set to a value of 1, the other to 2. Using fscalc, sum these in to a third overlay volume. Now you have a volume where each overlay and their convergence have a unique value. Use mris_seg2annot, generate an overlay file from the combine volume as well using a color look up table you specify. Here is an example script: 400: Invalid request I used a Cyan-Yellow-Magenta color scheme as it is color-blind friendly. Once the annotation file is generated, you can load it in freeview or tksurfer and work it in to a figure in whatever way you are used to. I use my quadfigure script.]]></summary></entry><entry><title type="html">Freesurfer snapshots made simpler</title><link href="https://matthewpeverill.com/blog/2018/freesurfer-snapshots-made-simpler/" rel="alternate" type="text/html" title="Freesurfer snapshots made simpler" /><published>2018-05-01T12:38:00-05:00</published><updated>2018-05-01T12:38:00-05:00</updated><id>https://matthewpeverill.com/blog/2018/freesurfer-snapshots-made-simpler</id><content type="html" xml:base="https://matthewpeverill.com/blog/2018/freesurfer-snapshots-made-simpler/"><![CDATA[<h1>Introduction</h1>
+<p>There a lot of reasons why you would want to programatically collect screenshots from Freesurfer tools. For one, it’s a lot simpler to generate QA reports of your parcellations than to go through and manually inspect each brain volume one more time.</p>
+
+<p>Second, Freesurfer is a great tool for generating figures. You can use tksurfer to project statistical maps from FSL or other programs on a 3d image of the brain surface. Add in some imagemagick scripting and you can very easily create some nifty figures:</p>
+
+<p><a href="https://matthewpeverill.com/assets/img/2018/04/examplequadfig.png"><img class="alignnone size-full wp-image-21" src="https://matthewpeverill.com/assets/img/2018/04/examplequadfig.png" alt="" width="240" height="206" /></a></p>
+
+<p>(image from: Peverill, M., McLaughlin, K. A., Finn, A. S., &amp; Sheridan, M. A. (2016). Working memory filtering continues to develop into late adolescence. <i>Developmental Cognitive Neuroscience</i>. https://doi.org/10.1016/j.dcn.2016.02.004)</p>
+
+<p>That being said, complications are always the rule in computer land. Freesurfer is written using <a href="https://en.wikipedia.org/wiki/Tcl">Tcl/Tk</a>, which is a powerful but quircky programming language used to create gui applications. Partly because of this limitation, the way snapshots are taken is that a command is run in the tcl script ‘SaveTiff’ which saves a TIFF image of whatever is displayed in the users window. If your window is front and center, great. BUT if your screensaver comes on, if part of the window is obscured, or if your screen isn’t big enough, your snapshot will be corrupted. This also means that the process can’t be parallelized (for example, you need to generate QA reports one at a time) because otherwise the windows will interfere with one another. This also means you can’t wrap up QA generation in your normal workflow.</p>
+
+<p>Note: These days tkmedit and tksurfer are somewhat deprecated in favor of freeview, a more sophisticated program that has its own snapshotting interface. I’m using the former tools because the QA-tools script uses them, but xvfb should also work with freeview.</p>
+<h1>What is Xvfb</h1>
+<p>That said, this is Linux, which means that someone has likely already solved this problem. Graphics in unix usually run through x windows. When you run say, firefox, from the command line the application looks in your environment to see what the default ‘x server’ is set to. Then it will display the window on that server (your screen). This is why firefox fails if you run it in a normal ssh window. If you ran ssh from a mac with the -X option, it will know to try to open the window on your local x server, and the app opens on your desktop.</p>
+
+<p><a href="https://www.x.org/archive/X11R7.6/doc/man/man1/Xvfb.1.xhtml">Xvfb</a> is a virtual x server intended for testing graphical applications. So if we need to take some Freesurfer snapshots, instead of dealing with the idiosyncrocies of our local display, we can just just start an isolated dedicated x server for that subject’s Freesurfer, open the window there (it won’t actually show up anywhere), take our screenshot, and close it when we are done.</p>
+<h1>Minimal Example</h1>
+<p>Here’s a minimal example. We’re going to use xvfb-run to open up tksurfer and take a screenshot. In production, you would want to test out the tcl commands first in your normal environment to make sure you were taking the picture you want, but this will just show you how it works. You will need Xvfb installed on your server, and you will need to have freesurfer set up.</p>
+
+<figure class="highlight"><pre><code class="language-plaintext" data-lang="plaintext">mrpev@vmpfc$xvfb-run --server-args "-screen 0 1920x1080x24" tksurfer fsaverage lh pial -gray -mni152reg #everything after this is in tcl
+subject is fsaverage
+hemi is lh
+surface is pial
+surfer: current subjects dir: /mnt/stressdevlab/fear_pipeline/edited_FreeSurfer
+surfer: not in "scripts" dir ==&amp;gt; using cwd for session root
+surfer: session root data dir ($session) set to:
+surfer: /mnt/stressdevlab/fear_pipeline/edited_FreeSurfer
+checking for nofix files in 'pial'
+Reading image info (/mnt/stressdevlab/fear_pipeline/edited_FreeSurfer/fsaverage)
+Reading /mnt/stressdevlab/fear_pipeline/edited_FreeSurfer/fsaverage/mri/orig.mgz
+surfer: Reading header info from /mnt/stressdevlab/fear_pipeline/edited_FreeSurfer/fsaverage/mri/orig.mgz
+surfer: vertices=163842, faces=327680
+surfer: curvature read: min=-0.673989 max=0.540227
+surfer: single buffered window
+surfer: tkoInitWindow(fsaverage)
+surfer: using interface /usr/local/freesurfer/stable5_3/tktools/tksurfer.tcl
+Reading /usr/local/freesurfer/stable5_3/tktools/tkm_common.tcl
+Reading /usr/local/freesurfer/stable5_3/tktools/tkm_wrappers.tcl
+Reading /usr/local/freesurfer/stable5_3/lib/tcl/fsgdfPlot.tcl
+Reading /usr/local/freesurfer/stable5_3/tktools/tkUtils.tcl
+Successfully parsed tksurfer.tcl
+reading white matter vertex locations...
+% make_lateral_view #these are entered manually.
+% redraw
+% save_tiff example.tiff
+% exit
+mrpev@vmpfc:/mnt/stressdevlab/fear_pipeline/edited_FreeSurfer$eog example.tiff #this just opens the image for viewing.</code></pre></figure>
+
+<p>If everything goes well, you shouldn’t see any windows running but you should still get a screenshot at the end.  If you don’t want to enter the tcl commands manually (and why would you?) you can put them in a tcl script and specify the script when you run tksurfer using the -tcl option.</p>
+
+<p><a href="https://matthewpeverill.com/assets/img/2018/04/capture.png"><img class="alignnone size-medium wp-image-23" src="https://matthewpeverill.com/assets/img/2018/04/capture.png?w=300" alt="" width="300" height="274" /></a></p>
+<h1>Parallel generation of QA reports using Freesurfer qa-tools and Xvfb</h1>
+<p>Freesurfer publishes a powerful library, QAtools, to generate QA reports. But this involves, you guessed it, lots of snapshots. So it takes forever if you have a big dataset. We can use xvfb to address this. This is the code that needs to be run for each subject:</p>
+<pre>[sourcecode language="bash"]
+export SUBJECTS_DIR=(FREESURFER SUBJECT DIRECTORY)
+export QA_TOOLS=(PATH TO QAtools)
+xvfb-run -a --server-args "-screen 0 1920x1080x24" -e /dev/stderr $QA_TOOLS/recon_checker -s (SUBJECTID) -snaps-only -snaps-detailed -snaps-overwrite -snaps-out $SUBJECTS_DIR/QA/QA_check(SUBJECTID).html</pre>
+<p>A few notes on this:</p>
+<ul>
+	<li>The -a option to xvfb-run makes sure that each process doesn't try and run on the same x display.</li>
+	<li>recon_checker will fail if you don't specify a separate html file per subject (because parallel processes will try to write to the same file).</li>
+</ul>
+<p>Then you run the script using qsub:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">qsub <span class="nt">-cwd</span> <span class="nt">-V</span> <span class="nt">-S</span> /bin/bash runqa.sh&lt;/pre&gt;</code></pre></figure>
+
+<p>(there are a variety of ways to execute this smoothly across many subjects, including gnu make, a simple script executing a for loop with string substitution, etc. That’s a subject for another post)</p>
+
+<p>When you are done, you should have finished QA reports for each subject. The only downside is that, because the index page is generated by the qa_tools program, you’ll need to regenerate it. You can do this with a for loop like so:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="k">for </span>i <span class="k">in </span>QA_check1???_1.html<span class="p">;</span> <span class="k">do </span><span class="nb">sed</span> <span class="s1">'3q;d'</span> <span class="nv">$i</span><span class="p">;</span> <span class="k">done</span> &amp;gt<span class="p">;</span> qareport.html</code></pre></figure>]]></content><author><name></name></author><summary type="html"><![CDATA[Introduction There a lot of reasons why you would want to programatically collect screenshots from Freesurfer tools. For one, it’s a lot simpler to generate QA reports of your parcellations than to go through and manually inspect each brain volume one more time. Second, Freesurfer is a great tool for generating figures. You can use tksurfer to project statistical maps from FSL or other programs on a 3d image of the brain surface. Add in some imagemagick scripting and you can very easily create some nifty figures: (image from: Peverill, M., McLaughlin, K. A., Finn, A. S., &amp; Sheridan, M. A. (2016). Working memory filtering continues to develop into late adolescence. Developmental Cognitive Neuroscience. https://doi.org/10.1016/j.dcn.2016.02.004) That being said, complications are always the rule in computer land. Freesurfer is written using Tcl/Tk, which is a powerful but quircky programming language used to create gui applications. Partly because of this limitation, the way snapshots are taken is that a command is run in the tcl script ‘SaveTiff’ which saves a TIFF image of whatever is displayed in the users window. If your window is front and center, great. BUT if your screensaver comes on, if part of the window is obscured, or if your screen isn’t big enough, your snapshot will be corrupted. This also means that the process can’t be parallelized (for example, you need to generate QA reports one at a time) because otherwise the windows will interfere with one another. This also means you can’t wrap up QA generation in your normal workflow. Note: These days tkmedit and tksurfer are somewhat deprecated in favor of freeview, a more sophisticated program that has its own snapshotting interface. I’m using the former tools because the QA-tools script uses them, but xvfb should also work with freeview. What is Xvfb That said, this is Linux, which means that someone has likely already solved this problem. Graphics in unix usually run through x windows. When you run say, firefox, from the command line the application looks in your environment to see what the default ‘x server’ is set to. Then it will display the window on that server (your screen). This is why firefox fails if you run it in a normal ssh window. If you ran ssh from a mac with the -X option, it will know to try to open the window on your local x server, and the app opens on your desktop. Xvfb is a virtual x server intended for testing graphical applications. So if we need to take some Freesurfer snapshots, instead of dealing with the idiosyncrocies of our local display, we can just just start an isolated dedicated x server for that subject’s Freesurfer, open the window there (it won’t actually show up anywhere), take our screenshot, and close it when we are done. Minimal Example Here’s a minimal example. We’re going to use xvfb-run to open up tksurfer and take a screenshot. In production, you would want to test out the tcl commands first in your normal environment to make sure you were taking the picture you want, but this will just show you how it works. You will need Xvfb installed on your server, and you will need to have freesurfer set up. mrpev@vmpfc$xvfb-run --server-args "-screen 0 1920x1080x24" tksurfer fsaverage lh pial -gray -mni152reg #everything after this is in tcl subject is fsaverage hemi is lh surface is pial surfer: current subjects dir: /mnt/stressdevlab/fear_pipeline/edited_FreeSurfer surfer: not in "scripts" dir ==&amp;gt; using cwd for session root surfer: session root data dir ($session) set to: surfer: /mnt/stressdevlab/fear_pipeline/edited_FreeSurfer checking for nofix files in 'pial' Reading image info (/mnt/stressdevlab/fear_pipeline/edited_FreeSurfer/fsaverage) Reading /mnt/stressdevlab/fear_pipeline/edited_FreeSurfer/fsaverage/mri/orig.mgz surfer: Reading header info from /mnt/stressdevlab/fear_pipeline/edited_FreeSurfer/fsaverage/mri/orig.mgz surfer: vertices=163842, faces=327680 surfer: curvature read: min=-0.673989 max=0.540227 surfer: single buffered window surfer: tkoInitWindow(fsaverage) surfer: using interface /usr/local/freesurfer/stable5_3/tktools/tksurfer.tcl Reading /usr/local/freesurfer/stable5_3/tktools/tkm_common.tcl Reading /usr/local/freesurfer/stable5_3/tktools/tkm_wrappers.tcl Reading /usr/local/freesurfer/stable5_3/lib/tcl/fsgdfPlot.tcl Reading /usr/local/freesurfer/stable5_3/tktools/tkUtils.tcl Successfully parsed tksurfer.tcl reading white matter vertex locations... % make_lateral_view #these are entered manually. % redraw % save_tiff example.tiff % exit mrpev@vmpfc:/mnt/stressdevlab/fear_pipeline/edited_FreeSurfer$eog example.tiff #this just opens the image for viewing. If everything goes well, you shouldn’t see any windows running but you should still get a screenshot at the end.  If you don’t want to enter the tcl commands manually (and why would you?) you can put them in a tcl script and specify the script when you run tksurfer using the -tcl option. Parallel generation of QA reports using Freesurfer qa-tools and Xvfb Freesurfer publishes a powerful library, QAtools, to generate QA reports. But this involves, you guessed it, lots of snapshots. So it takes forever if you have a big dataset. We can use xvfb to address this. This is the code that needs to be run for each subject: [sourcecode language="bash"] export SUBJECTS_DIR=(FREESURFER SUBJECT DIRECTORY) export QA_TOOLS=(PATH TO QAtools) xvfb-run -a --server-args "-screen 0 1920x1080x24" -e /dev/stderr $QA_TOOLS/recon_checker -s (SUBJECTID) -snaps-only -snaps-detailed -snaps-overwrite -snaps-out $SUBJECTS_DIR/QA/QA_check(SUBJECTID).html A few notes on this: The -a option to xvfb-run makes sure that each process doesn't try and run on the same x display. recon_checker will fail if you don't specify a separate html file per subject (because parallel processes will try to write to the same file). Then you run the script using qsub: qsub -cwd -V -S /bin/bash runqa.sh&lt;/pre&gt; (there are a variety of ways to execute this smoothly across many subjects, including gnu make, a simple script executing a for loop with string substitution, etc. That’s a subject for another post) When you are done, you should have finished QA reports for each subject. The only downside is that, because the index page is generated by the qa_tools program, you’ll need to regenerate it. You can do this with a for loop like so: for i in QA_check1???_1.html; do sed '3q;d' $i; done &amp;gt; qareport.html]]></summary></entry></feed>
