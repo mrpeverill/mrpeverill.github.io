@@ -24,5 +24,5 @@ act of rs-fMRI motion scrubbing thresholds.</a>
 
 <p><a href="{{ site.url}}/assets/pdf/flux2023MRPposter.pdf"><img src="{{site.url}}/assets/img/FLUX2023posterthumbnail.png" alt="Thumbnail with link to poster"></a>
 
-<p>Here is a blog post about the [reproducible workflow behind the poster]({% post_url 2024-11-04-JustReproducibleEnoughPoster %}).
+<p>Here is a blog post about the <a href="{% post_url 2024-11-04-JustReproducibleEnoughPoster %}">reproducible workflow behind the poster</a>.
 
