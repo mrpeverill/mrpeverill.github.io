@@ -6,7 +6,7 @@ title: blank # This makes it use my name
 first_name: Matthew
 middle_name:
 last_name: Peverill
-email: mrpeverill@gmail.com
+#email: mrpeverill@gmail.com
 description: > # the ">" symbol means to ignore newlines until "footer_text:"
   Clinical Scientist and  Psychologist in Training 
 footer_text: >
@@ -55,7 +55,7 @@ og_image: # The site-wide (default for all links) Open Graph preview image
 
 github_username: mrpeverill # your GitHub user name
 gitlab_username: # your GitLab user name
-twitter_username: MatthewPeverill # your Twitter handle
+#twitter_username: MatthewPeverill # your Twitter handle
 linkedin_username: # your LinkedIn user name
 scholar_userid: hv4TPzMAAAAJ # your Google Scholar ID
 orcid_id: 0000-0002-8257-1004 # your ORCID ID
