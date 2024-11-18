@@ -13,8 +13,8 @@ profile:
     <p>Madison, WI 53711</p>
 
 news: false  # includes a list of news items
-selected_papers: true # includes a list of papers marked as "selected={true}"
-social: true  # includes social icons at the bottom of the page
+selected_papers: false # includes a list of papers marked as "selected={true}"
+social: false  # includes social icons at the bottom of the page
 ---
 
 As a clinical psychologist, my goal is to give my clients the emotional space and psychological tools needed to reach their goals with wisdom and skill. My therapeutic approach is grounded in well-tested, proven principles of clinical change, applied flexibly within a warm, validating, and genuine relationship. I have seen my clients reach their goals in as little as a few sessions and up to several years of treatment. I strive to set a pace to our work that honors both our relationship and the urgency of your needs.
