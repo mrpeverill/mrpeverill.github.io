@@ -1,6 +1,6 @@
 ---
 layout: about
-title: <strong>Matthew</strong> Peverill
+title: About Me
 permalink: /
 
 profile:

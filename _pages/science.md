@@ -1,6 +1,6 @@
 ---
 layout: about
-title: <strong>Matthew</strong> Peverill
+title: Clinical Science
 permalink: /science
 subtitle: Post-Doctoral researcher in clinical psychology at the University of Wisconsin. 
 
