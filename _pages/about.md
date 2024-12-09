@@ -12,7 +12,7 @@ selected_papers: true # includes a list of papers marked as "selected={true}"
 social: false  # includes social icons at the bottom of the page
 ---
 
-I am a licensed clinical psychologist and a scientist working in the area of early life adversity and trauma. I work clinically at the [Family Therapy Center of Madison](fctm.org). I am a post-doctoral researcher at the University of Wisconsin in the department of Psychiatry. In a prior career I was a systems administrator and application developer. In my spare time, I enjoy biking, cooking, reading, playing with technology, and spending time with my partner and two children.
+I am a licensed clinical psychologist and a scientist working in the area of early life adversity and trauma. Clinically, I am an independent practicioner providing psychotherapy for children, adolescents, and adults. Academically, I am a post-doctoral researcher at the University of Wisconsin in the department of Psychiatry. In a prior career I was a systems administrator and application developer. In my spare time, I enjoy biking, cooking, reading, playing with technology, and spending time with my partner and two children.
 
 # Practice
 As a clinician, my goal is to give my clients the emotional space and psychological tools needed to reach their goals with wisdom and skill. My therapeutic approach is grounded in well-tested, proven principles of clinical change, applied flexibly within a warm, validating, and genuine relationship. I have seen my clients reach their goals in as little as a few sessions and up to several years of treatment – I strive to set a pace to our work that honors both our relationship and the urgency of your needs.
@@ -21,7 +21,7 @@ I have advanced training in working with individuals affected by trauma and PTSD
 
 I am experienced in working with clients of all ages. I strongly believe that providing support for parents is one of the best ways we can support children. Especially for young children, I often work primarily or solely with parents. This approach has been shown to be just as or more effective than individual treatment in many cases.
 
-I practice at the Family Therapy Center of Madison. If you are interested in working with me, please call <a href="tel:+16082769191">(608) 276-9191</a>).
+My practice is located at Family Therapy Center of Madison. If you are interested in working with me, please call <a href="tel:+16082769191">(608) 276-9191</a>).
 
 # Research
 
