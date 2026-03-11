@@ -18,6 +18,10 @@ group :jekyll_plugins do
     gem 'htmlcompressor'
     gem 'htmlbeautifier'
     gem 'jekyll-gist'
+    gem 'csv'
+    gem 'base64'
+    gem 'bigdecimal'
+    gem 'logger'
 end
 group :other_plugins do
     gem 'httparty'
