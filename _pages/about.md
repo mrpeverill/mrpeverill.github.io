@@ -8,8 +8,8 @@ profile:
   image: matt.jpg
   
 news: false  # includes a list of news items
-selected_papers: true # includes a list of papers marked as "selected={true}"
-social: true  # includes social icons at the bottom of the page
+selected_papers: false # includes a list of papers marked as "selected={true}"
+social: false  # includes social icons at the bottom of the page
 ---
 
 I am a licensed clinical psychologist in private practice. I provide psychotherapy for children, adolescents, and adults. I am experienced working with a broad range of clinical needs. I have specialty training in trauma-focused therapies for PTSD, the treatment of disruptive behavior disorders in childhood, and psychotherapy for insomnia.
