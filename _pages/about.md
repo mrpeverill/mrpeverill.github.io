@@ -9,24 +9,24 @@ profile:
   
 news: false  # includes a list of news items
 selected_papers: true # includes a list of papers marked as "selected={true}"
-social: false  # includes social icons at the bottom of the page
+social: true  # includes social icons at the bottom of the page
 ---
 
-I am a licensed clinical psychologist and a scientist working in the area of early life adversity and trauma. Clinically, I am an independent practitioner providing psychotherapy for children, adolescents, and adults. My specialties include trauma-focused therapies and the treatment of disruptive behavior disorders in childhood. Academically, I am a post-doctoral researcher at the University of Wisconsin in the department of Psychiatry. In a prior career I was a systems administrator and application developer. In my spare time, I enjoy biking, cooking, reading, playing with technology, and spending time with my partner and two children.
+I am a licensed clinical psychologist in private practice. I provide psychotherapy for children, adolescents, and adults. I am experienced working with a broad range of clinical needs. I have specialty training in trauma-focused therapies for PTSD, the treatment of disruptive behavior disorders in childhood, and psychotherapy for insomnia.
 
-# Practice
-As a clinician, my goal is to give my clients the emotional space and psychological tools needed to reach their goals with wisdom and skill. My therapeutic approach is grounded in well-tested, proven principles of clinical change, applied flexibly within a warm, validating, and genuine relationship. I have seen my clients reach their goals in as little as a few sessions and up to several years of treatment – I strive to set a pace to our work that honors both our relationship and the urgency of your needs.
-
-I have advanced training in working with individuals affected by trauma and PTSD, as well as family-based treatments for disruptive behavior in childhood. I am a clinical scientist and have worked extensively to advance understanding of early life adversity and trauma. You can read more about my research on my personal website.
+As a therapist, my goal is to give my clients the emotional space and psychological tools needed to reach their goals with wisdom and skill. My therapeutic approach is grounded in well-tested, proven principles of clinical change, applied flexibly within a warm, validating, and genuine relationship. I have seen my clients reach their goals in as little as a few sessions and up to several years of treatment – I strive to set a pace to our work that honors both our relationship and the urgency of your needs.
 
 I am experienced in working with clients of all ages. I strongly believe that providing support for parents is one of the best ways we can support children. Especially for young children, I often work primarily or solely with parents. This approach has been shown to be just as or more effective than individual treatment in many cases.
 
-My practice is located at [Family Therapy Center of Madison](fctm.org). If you are interested in working with me, please call <a href="tel:+16082769191">(608) 276-9191</a>).
+# Research & Background
 
-# Research
+Prior to transitioning to full-time clinical practice, my work focused on clinical science and the developmental impacts of early life adversity. I completed my graduate education at the University of Washington under the supervision of [Katie McLaughlin](https://sdlab.fas.harvard.edu/) and a research fellowship at Ryan Herringa's [BRAVE lab](https://brave.psychiatry.wisc.edu/) at the University of Wisconsin. 
 
-I am passionate about research with the potential to realize improved clinical outcomes in vulnerable, under-served, and under-studied children and families. To that end, my research has employed neuropsychological, psychological, and epidemiological tools to explore multiple mechanisms of mental health risk in children exposed to adverse experiences including child maltreatment, neglect, and poverty. Specifically, [my work]({% link _pages/publications.md %}) has investigated psychosocial threat as a dimension of adversity with unique effects on the structure and function of areas of the brain thought to be involved in emotional regulation and reactivity. I am extremely interested in pathways linking socioeconomic status to mental health outcomes, and recently published a first ever meta-analysis of the association of socioeconomic status with childhood psychopathology in population representative studies. In my [dissertation study]({% link _projects/SSES_project.markdown %}), I used multimodal measurement of socioeconomic status to research the effects of poverty on psychopathology risk factors including stress, emotion regulation, and social cognition.
+My research has employed neuropsychological, psychological, and epidemiological tools to explore the mechanisms of mental health risk in children exposed to maltreatment, neglect, and poverty. Specifically, [my work]({% link _pages/publications.md %}) has investigated psychosocial threat as a dimension of adversity with unique effects on the brain areas involved in emotional regulation. In my [dissertation study]({% link _projects/SSES_project.markdown %}), I researched the effects of poverty on psychopathology risk factors including stress, emotion regulation, and social cognition. 
 
-I completed my graduate education at the University of Washington under the supervision of [Katie McLaughlin](https://sdlab.fas.harvard.edu/). I am currently a post-doctoral research associate at Ryan Herringa's [BRAVE lab](https://brave.psychiatry.wisc.edu/).
+In a previous career, I was a systems administrator and application developer. In my spare time, I enjoy biking, cooking, reading, playing with technology, and spending time with my partner and two children.
 
-My methodological toolbox includes: structural MRI analysis in FreeSurfer, functional connectivity analysis in FSL, and multi-level modeling. 
+***
+
+**Contact**
+If you are interested in working with me, please call <a href="tel:+16082769191">(608) 276-9191</a> or contact the [Family Therapy Center of Madison](http://ftcm.org).
