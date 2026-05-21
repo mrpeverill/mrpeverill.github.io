@@ -8,7 +8,7 @@ group :jekyll_plugins do
     gem 'jekyll-github-metadata'
     gem 'jekyll-imagemagick'
     gem 'jekyll-paginate-v2'
-    gem 'jekyll-scholar'
+    # gem 'jekyll-scholar'  # publications page retired 2026-05; CV PDF is source of truth
     gem 'jekyll-sitemap'
     gem 'jekyll-target-blank'
     gem 'jekyll-twitter-plugin'

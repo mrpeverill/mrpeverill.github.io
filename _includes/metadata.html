@@ -134,21 +134,72 @@
     {%- endif -%}
 
     <script type="application/ld+json">
-      {
-        "author":
+    {
+      "@context": "https://schema.org",
+      "@graph": [
         {
           "@type": "Person",
-          "name": "{{ site.first_name }} {{ site.middle_name }} {{ site.last_name }}"
+          "@id": "{{ site.url }}/#person",
+          "name": "{{ site.first_name }}{% if site.middle_name %} {{ site.middle_name }}{% endif %} {{ site.last_name }}",
+          "givenName": "{{ site.first_name }}",
+          "familyName": "{{ site.last_name }}",
+          "honorificSuffix": "PhD",
+          "jobTitle": "Licensed Clinical Psychologist",
+          "description": "{{ site.description | strip_newlines | strip }}",
+          "url": "{{ site.url }}/",
+          "image": "{{ site.og_image }}",
+          "alumniOf": [
+            { "@type": "CollegeOrUniversity", "name": "University of Washington" },
+            { "@type": "CollegeOrUniversity", "name": "University of Wisconsin–Madison" }
+          ]{% if sameaslinks != blank %},
+          "sameAs": {{ sameaslinks }}{% endif %}
         },
-        "url": "{{ page.url | prepend: site.baseurl | prepend: site.url }}",
-        "@type": "WebSite",
-        "description": "{%- if page.description -%}{{ page.description }}{%- else if site.description -%}{{ site.description }}{%- endif -%}",
-        "headline": "{%- if page.title -%}{{ page.title }}{%- else -%}{{ site.title }}{%- endif -%}",
-        {% if sameaslinks != blank -%}
-        "sameAs": {{ sameaslinks }}, 
-        {%- endif %}
-        "name": "{{ site.first_name }} {{ site.middle_name }} {{ site.last_name }}",
-        "@context": "https://schema.org"
-      }
+        {
+          "@type": "WebSite",
+          "@id": "{{ site.url }}/#website",
+          "url": "{{ site.url }}/",
+          "name": "{{ site.first_name }}{% if site.middle_name %} {{ site.middle_name }}{% endif %} {{ site.last_name }}",
+          "publisher": { "@id": "{{ site.url }}/#person" },
+          "inLanguage": "{{ site.lang }}"
+        }{% if page.permalink == "/" %},
+        {
+          "@type": "Psychologist",
+          "@id": "{{ site.url }}/#practice",
+          "name": "Matthew Peverill, PhD — Clinical Psychologist",
+          "url": "{{ site.url }}/",
+          "image": "{{ site.og_image }}",
+          "telephone": "+1-608-276-9191",
+          "founder": { "@id": "{{ site.url }}/#person" },
+          "provider": { "@id": "{{ site.url }}/#person" },
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "700 Rayovac Drive, Suite 220",
+            "addressLocality": "Madison",
+            "addressRegion": "WI",
+            "postalCode": "53711",
+            "addressCountry": "US"
+          },
+          "areaServed": [
+            { "@type": "City", "name": "Madison" },
+            { "@type": "State", "name": "Wisconsin" }
+          ],
+          "knowsAbout": [
+            "Trauma-focused psychotherapy",
+            "Post-Traumatic Stress Disorder (PTSD)",
+            "Child behavior therapy",
+            "Parent-led treatment of disruptive behavior in children",
+            "Oppositional Defiant Disorder (ODD)",
+            "Attention-Deficit/Hyperactivity Disorder (ADHD)",
+            "Cognitive Behavioral Therapy for Insomnia (CBT-I)",
+            "Cognitive Behavioral Therapy",
+            "Acceptance and Commitment Therapy (ACT)",
+            "Dialectical Behavior Therapy (DBT)",
+            "Anxiety disorders",
+            "Panic disorder",
+            "Depression"
+          ]
+        }{% endif %}
+      ]
+    }
     </script>
 {%- endif %}
