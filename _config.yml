@@ -81,8 +81,8 @@ panelbear_analytics:  # panelbear analytics site ID (format: XXXXXXXXX)
 # Blog
 # -----------------------------------------------------------------------------
 
-blog_name: Brain \#!bashing
-blog_description: Thoughts on Psychological Science and Technology
+blog_name: Matthew Peverill, PhD | Blog
+blog_description: Thoughts on Psychological Science and Practice
 permalink: /blog/:year/:title/
 
 # Pagination
