@@ -8,10 +8,9 @@ middle_name:
 last_name: Peverill
 #email: mrpeverill@gmail.com
 description: > # the ">" symbol means to ignore newlines until "footer_text:"
-  Clinical Scientist and  Psychologist in Training 
-footer_text: >
-  Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio">al-folio</a> theme.
-keywords: academic-website, portfolio-website, neuroscience, clinical-psychology  # add your own keywords or leave empty
+  Licensed clinical psychologist in Madison, WI. Evidence-based therapy for trauma, child behavior, and insomnia, plus broader CBT and third-wave behavioral therapy.
+footer_text:
+keywords: clinical psychologist, psychotherapy, Madison WI, trauma therapy, PTSD, child behavior therapy, CBT-I, insomnia treatment, cognitive behavioral therapy, ACT, evidence-based therapy
 
 lang: en # the language of your site (for example: en, fr, cn, ru, etc.)
 icon: 🧠 # the emoji used as the favicon
@@ -45,9 +44,9 @@ max_width: 800px
 # Open Graph & Schema.org
 # -----------------------------------------------------------------------------
 # Display links to the page with a preview object on social media.
-serve_og_meta: false # Include Open Graph meta tags in the HTML head
-serve_schema_org: false # Include Schema.org in the HTML head
-og_image: # The site-wide (default for all links) Open Graph preview image
+serve_og_meta: true # Include Open Graph meta tags in the HTML head
+serve_schema_org: true # Include Schema.org in the HTML head
+og_image: https://matthewpeverill.com/assets/img/matt.jpg # The site-wide (default for all links) Open Graph preview image
 
 # -----------------------------------------------------------------------------
 # Social integration
@@ -82,8 +81,8 @@ panelbear_analytics:  # panelbear analytics site ID (format: XXXXXXXXX)
 # Blog
 # -----------------------------------------------------------------------------
 
-blog_name: Brain \#!bashing
-blog_description: Thoughts on Psychological Science and Technology
+blog_name: Matthew Peverill, PhD | Blog
+blog_description: Thoughts on Psychological Science and Practice
 permalink: /blog/:year/:title/
 
 # Pagination
@@ -157,7 +156,7 @@ plugins:
   - jekyll-github-metadata
   - jekyll-imagemagick
   - jekyll-paginate-v2
-  - jekyll/scholar
+  # - jekyll/scholar  # publications page retired 2026-05; CV PDF is source of truth
   - jekyll-sitemap
   - jekyll-target-blank
   - jekyll-twitter-plugin
@@ -278,7 +277,7 @@ enable_masonry:             true   # enables automatic project cards arangement
 enable_math:                true   # enables math typesetting (uses MathJax)
 enable_tooltips:            false  # enables automatic tooltip links generated
                                    # for each section titles on pages and posts
-enable_darkmode:            true   # enables switching between light/dark modes
+enable_darkmode:            false  # enables switching between light/dark modes
 enable_navbar_social:       false  # enables displaying social links in the
                                    # navbar on the about page
 enable_project_categories:  true   # enables categorization of projects into
