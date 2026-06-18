@@ -28,54 +28,44 @@
               <!-- About -->
               <li class="nav-item {% if page.title == 'about' %}active{% endif %}">
                 <a class="nav-link" href="{{ '/' | relative_url }}">about
-                  {%- if page.title == "about" -%}
-                  <span class="sr-only">(current)</span>
-                  {%- endif -%}
+                  {%- if page.title == "about" -%}<span class="sr-only">(current)</span>{%- endif -%}
                 </a>
               </li>
+
+              <!-- Services -->
+              <li class="nav-item dropdown {% if page.url contains '/services/' %}active{% endif %}">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarServices" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">services</a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarServices">
+                  <a class="dropdown-item" href="{{ '/services/' | relative_url }}">Overview</a>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="{{ '/services/trauma/' | relative_url }}">Trauma &amp; PTSD</a>
+                  <a class="dropdown-item" href="{{ '/services/child-behavior/' | relative_url }}">Child Behavior</a>
+                  <a class="dropdown-item" href="{{ '/services/insomnia/' | relative_url }}">CBT for Insomnia</a>
+                </div>
+              </li>
+
               {% if site.blog_name %}
               <!-- Blog -->
               <li class="nav-item {% if page.url contains 'blog' %}active{% endif %}">
                 <a class="nav-link" href="{{ '/blog/' | relative_url }}">blog
-                  {%- if page.title == "blog" -%}
-                  <span class="sr-only">(current)</span>
-                  {%- endif -%}
+                  {%- if page.title == "blog" -%}<span class="sr-only">(current)</span>{%- endif -%}
                 </a>
               </li>
               {%- endif %}
 
-              <!-- Other pages -->
-              {%- assign sorted_pages = site.pages | sort: "title" -%}
-              {%- for p in sorted_pages -%}
-              {%- if p.nav and p.autogen == nil -%}
-              {%- if p.dropdown %}
-              <li class="nav-item dropdown {% if page.title == p.title %}active{% endif %}">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ p.title }}
-                  {%- if page.title == p.title -%}
-                  <span class="sr-only">(current)</span>
-                  {%- endif -%}
-                </a>
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                  {%- for child in p.children -%}
-                  {%- if child.title == 'divider' %}
-                  <div class="dropdown-divider"></div>
-                  {%- else %}
-                  <a class="dropdown-item" href="{{ child.permalink | relative_url }}">{{ child.title }}</a>
-                  {%- endif -%}
-                  {% endfor %}
-                </div>
-              </li>
-              {%- else %}
-              <li class="nav-item {% if page.title == p.title %}active{% endif %}">
-                <a class="nav-link" href="{{ p.url | relative_url }}">{{ p.title }}
-                  {%- if page.title == p.title -%}
-                  <span class="sr-only">(current)</span>
-                  {%- endif -%}
+              <!-- Vitae -->
+              <li class="nav-item {% if page.title == 'vitae' %}active{% endif %}">
+                <a class="nav-link" href="{{ '/CV/' | relative_url }}">vitae
+                  {%- if page.title == "vitae" -%}<span class="sr-only">(current)</span>{%- endif -%}
                 </a>
               </li>
-              {%- endif -%}
-              {%- endif -%}
-              {% endfor -%}
+
+              <!-- Contact -->
+              <li class="nav-item {% if page.title == 'contact' %}active{% endif %}">
+                <a class="nav-link" href="{{ '/contact/' | relative_url }}">contact
+                  {%- if page.title == "contact" -%}<span class="sr-only">(current)</span>{%- endif -%}
+                </a>
+              </li>
               <!-- Phone CTA -->
               <li class="nav-item nav-phone">
                 <a class="nav-link" href="tel:+16082769191">

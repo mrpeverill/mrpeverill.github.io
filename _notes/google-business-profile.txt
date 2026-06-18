@@ -1,0 +1,19 @@
+Google Business Profile — Business Description
+(750 character limit; use the version that fits)
+
+--- SHORT VERSION (under 750 characters) ---
+
+Licensed clinical psychologist in Madison, WI, specializing in trauma and PTSD, child behavior problems, and cognitive behavioral therapy for insomnia (CBT-I). I use evidence-based approaches including trauma-focused CBT, CPT, and behavioral parent training for ODD and ADHD. I also see adults and children for anxiety, panic disorder, OCD, depression, and other concerns. I practice through the Family Therapy Center of Madison and see clients in person and via telehealth within Wisconsin. To inquire about availability, call (608) 276-9191.
+
+--- NOTES ---
+- Update telehealth line when PsyPact certification arrives:
+  Change "within Wisconsin" to "in Wisconsin and PSYPACT-participating states"
+  (See psypact.org/page/psypactmap for current state list)
+- Add insurance panels once confirmed
+- Add photo: use matt.jpg (professional headshot, white background)
+- Services to add in GBP: Trauma Therapy, PTSD Treatment, Child Behavior Therapy,
+  CBT for Insomnia, Anxiety Treatment, Depression Treatment, OCD Treatment,
+  ADHD Assessment/Treatment, Behavioral Parent Training
+- Hours: add once schedule stabilizes
+- Verify via postcard at 700 Rayovac Drive, Suite 220, Madison WI 53711
+  (give FTCM front desk a heads-up to watch for it)
