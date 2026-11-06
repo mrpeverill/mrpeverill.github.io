@@ -1,12 +1,11 @@
 ---
 layout: page
-title: contact
+title: Contact
 permalink: /contact/
 description: Contact Matthew Peverill, PhD — licensed clinical psychologist in Madison, WI. Call (608) 276-9191.
 nav: false
+hide_description: true
 ---
-
-## Get in Touch
 
 To inquire about availability or ask whether I might be a good fit for your needs, please call:
 
@@ -18,19 +17,32 @@ If I am not available or not the right fit, I will do my best to help you find a
 
 ## What to Expect
 
-When you call, you will reach me or the FTCM front desk. I typically return calls within one business day. A brief initial phone call helps us determine whether my expertise fits your needs and whether we might work well together — if so, we will schedule an initial appointment.
+When you call, you will reach me or the FTCM front desk. I respond to calls within two business days. A brief initial phone call helps us determine whether my expertise fits your needs and whether we might work well together — if so, we will schedule an initial appointment.
 
 ## Telehealth
 
-I am currently available for telehealth within Wisconsin. *(Note: update this section when PsyPact certification arrives — add list of participating states or link to psypact.org/page/psypactmap.)*
+I am available for telehealth anywhere in Wisconsin. I am also PSYPACT certified, which allows me to provide telehealth to clients located in the following participating states:
 
-## Insurance & Fees
+Alabama, Arizona, Arkansas, Colorado, Connecticut, Delaware, District of Columbia, Florida, Georgia, Idaho, Illinois, Indiana, Kansas, Kentucky, Maine, Maryland, Michigan, Minnesota, Mississippi, Missouri, Nebraska, Nevada, New Hampshire, New Jersey, North Carolina, North Dakota, Ohio, Oklahoma, Pennsylvania, Rhode Island, South Carolina, South Dakota, Tennessee, Texas, Utah, Vermont, Virginia, Washington, West Virginia, and Wyoming.
 
-*(Placeholder — add insurance panels and self-pay rate here before publishing.)*
+States join PSYPACT over time; the current list is on the [PSYPACT map](https://psypact.org/page/psypactmap).
+
+## Insurance
+
+I am in network with:
+
+- Anthem Blue Cross/Blue Shield
+- GHC
+- Medicaid
+- Medicare
+- MultiPlan
+- Quartz
+- The Alliance
+- WPS
 
 ## Conditions I Commonly Treat
 
-In addition to my specialty areas in [trauma & PTSD](/services/trauma/), [child behavior](/services/child-behavior/), and [CBT for insomnia](/services/insomnia/), I routinely see clients for:
+In addition to my specialty areas in [trauma & PTSD](/services/trauma/), [parenting and child behavior](/services/parenting/), and [CBT for insomnia](/services/insomnia/), I routinely see clients for:
 
 - Anxiety disorders (generalized anxiety, social anxiety, health anxiety)
 - Panic disorder and agoraphobia

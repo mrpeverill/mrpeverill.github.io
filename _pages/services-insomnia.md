@@ -4,17 +4,18 @@ title: CBT for Insomnia
 permalink: /services/insomnia/
 description: Cognitive behavioral therapy for insomnia (CBT-I) in Madison, WI. First-line treatment with better long-term outcomes than sleep medication.
 nav: false
+hide_description: true
 ---
 
 Roughly one in ten adults suffer from insomnia. Often, insomnia begins when natural sleep is disrupted by something external (by a stressor, illness, work schedule, or life change), but it can persist long after the original disruption has ended. Insomnia means trouble sleeping, but it also involves anxiety and worry about sleep, and lots of time tossing and turning at night trying to get some rest. Insomnia significantly impairs mood, concentration, and quality of life.
 
-I treat insomnia using Cognitive behavioral therapy for insomnia (CBT-I). CBT-I is the most effective treatment available, producing better long-term outcomes than sleep medication and without the risks of dependence or tolerance. CBT-I is recommended as the first-line treatment for chronic insomnia by the American College of Physicians and the American Academy of Sleep Medicine.
+I treat insomnia using cognitive behavioral therapy for insomnia (CBT-I). CBT-I is the most effective treatment available, producing better long-term outcomes than sleep medication and without the risks of dependence or tolerance. CBT-I is recommended as the first-line treatment for chronic insomnia by the American College of Physicians and the American Academy of Sleep Medicine.
 
-CBT-I is effective for adults a variety of sleep problems. It is effective for primary insomnia as well as insomnia co-occurring with anxiety, depression, chronic pain, or other conditions.
+CBT-I is effective for adults with a variety of sleep problems. It is effective for primary insomnia as well as insomnia co-occurring with anxiety, depression, chronic pain, or other conditions.
 
 ## How it works
 
-CBT-I addresses the behavioral patterns and beliefs that perpetuate insomnia over time — patterns that often outlast the original trigger (a stressful event, illness, life change) and take on a life of their own. Treatment typically includes:
+CBT-I addresses the behavioral patterns and beliefs that perpetuate insomnia over time. Treatment typically includes:
 
 - **Stimulus control:** rebuilding the bed and bedroom as cues for sleep rather than wakefulness or worry
 - **Cognitive restructuring:** addressing unhelpful beliefs about sleep that maintain the cycle of insomnia

@@ -4,18 +4,19 @@ title: Trauma & PTSD
 permalink: /services/trauma/
 description: Evidence-based trauma therapy and PTSD treatment in Madison, WI.
 nav: false
+hide_description: true
 ---
 
 Following traumatic experiences, people typically show some combination of:
 
-* **Re-experiencing** the trauma -- thinking about it, remembering it intrusively, having nightmares about it, and/or feeling it is recurring.
-* **Avoidance** avoiding people, places, or activities that seem similar to or reminiscent of the trauma.
-* **Changes in thinking** believing different things about other people, the world, or yourself.
-* **Hyperarousal** feeling easily startled, on-edge, constantly alert, and unable to relax.
+* **Re-experiencing** the trauma — thinking about it, remembering it intrusively, having nightmares about it, and/or feeling it is recurring.
+* **Avoidance** — avoiding people, places, or activities that seem similar to or reminiscent of the trauma.
+* **Changes in thinking** — believing different things about other people, the world, or yourself.
+* **Hyperarousal** — feeling easily startled, on-edge, constantly alert, and unable to relax.
 
-PTSD is a condition that occurs when these symptoms persist long past the point where they make sense and are useful. 
+Post-traumatic stress disorder (PTSD) is a condition that occurs when these symptoms persist long past the point where they make sense and are useful. 
 
-Post-traumatic stress disorder (PTSD) and trauma-related concerns respond well to treatment. Research on evidence-based trauma therapies is among the strongest in clinical psychology — several approaches produce meaningful, lasting recovery in the majority of people who complete them.
+PTSD and trauma-related concerns respond well to treatment. Research on evidence-based trauma therapies is among the strongest in clinical psychology — several approaches produce meaningful, lasting recovery in the majority of people who complete them.
 
 ## Who this is for
 
