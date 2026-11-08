@@ -8,7 +8,7 @@ nav: false
 hide_description: true
 ---
 
-I offer psychotherapy grounded in well-tested, evidence-based principles, applied flexibly to each person's goals and pace. My approach draws on cognitive-behavioral and third-wave behavioral therapies, including DBT skills and ACT-informed approaches.
+I offer psychotherapy grounded in well-tested, evidence-based principles, applied flexibly to each person's goals and pace. My approach draws on cognitive-behavioral and third-wave behavioral therapies, including CBT, DBT skills and ACT-informed approaches.
 
 I specialize in the following areas. Beyond these, I routinely work with clients experiencing anxiety, panic, depression, OCD, ADHD, and other concerns. If you're unsure whether your situation fits, please call — I'm glad to help you find the right fit, even if that's not with me.
 

@@ -22,7 +22,7 @@ PTSD and trauma-related concerns respond well to treatment. Research on evidence
 
 ## Who this is for
 
-I work with children, adolescents, and adults who have experienced traumatic events including abuse, neglect, accidents, medical trauma, loss, and other adverse experiences. Trauma symptoms can include intrusive memories or nightmares, avoidance of reminders, negative changes in mood and thinking, and heightened arousal or reactivity. You do not need a formal PTSD diagnosis to benefit from trauma-focused treatment.
+I work with adolescents and adults who have experienced traumatic events including abuse, neglect, accidents, medical trauma, loss, and other adverse experiences. Trauma symptoms can include intrusive memories or nightmares, avoidance of reminders, negative changes in mood and thinking, and heightened arousal or reactivity. You do not need a formal PTSD diagnosis to benefit from trauma-focused treatment.
 
 ## How it works
 
@@ -32,5 +32,5 @@ A focused course of trauma treatment typically spans 12–20 sessions, though pa
 
 ## My background
 
-Before clinical practice, I spent several years as a clinical scientist studying the neuroscience of trauma and adversity — specifically, how early experiences of threat shape the developing brain and confer risk for PTSD and related conditions. My clinical training in trauma includes coursework with Dr. Lori Zoellner, a leading researcher on exposure therapy for PTSD, and an internship at a PTSD specialty clinic. I bring both perspectives to my work: I understand trauma as a scientist and treat it as a clinician.
+Before clinical practice, I spent several years as a clinical scientist studying the neuroscience of trauma and adversity — specifically, how early experiences of threat shape the developing brain and confer risk for PTSD and related conditions. My have completed both coursework and hands-on clinical training in the treatment of PTSD. I bring both perspectives to my work: I understand trauma as a scientist and treat it as a clinician.
 
