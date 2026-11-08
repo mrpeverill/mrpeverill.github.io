@@ -1,6 +1,7 @@
 ---
 layout: page
 title: Contact
+seo_title: "Contact | Matthew Peverill, PhD, Psychologist in Madison, WI"
 permalink: /contact/
 description: Contact Matthew Peverill, PhD — licensed clinical psychologist in Madison, WI. Call (608) 276-9191.
 nav: false
@@ -17,7 +18,7 @@ If I am not available or not the right fit, I will do my best to help you find a
 
 ## What to Expect
 
-When you call, you will reach me or the FTCM front desk. I respond to calls within two business days. A brief initial phone call helps us determine whether my expertise fits your needs and whether we might work well together — if so, we will schedule an initial appointment.
+When you call, you will reach the FTCM front desk. I respond to calls within two business days. A brief initial phone call helps us determine whether my expertise fits your needs and whether we might work well together — if so, we will schedule an initial appointment.
 
 ## Telehealth
 
@@ -42,13 +43,14 @@ I am in network with:
 
 ## Conditions I Commonly Treat
 
-In addition to my specialty areas in [trauma & PTSD](/services/trauma/), [parenting and child behavior](/services/parenting/), and [CBT for insomnia](/services/insomnia/), I routinely see clients for:
+I routinely see clients for:
 
+- [trauma & PTSD](/services/trauma/)
+- [Oppositional Defiant Disorder (ODD) and conduct concerns in children](/services/parenting/)
+- [Parenting consultation and support](/services/parenting/)
+- [Insomnia](/services/insomnia)
+- Attention-Deficit/Hyperactivity Disorder (ADHD)
 - Anxiety disorders (generalized anxiety, social anxiety, health anxiety)
 - Panic disorder and agoraphobia
-- Obsessive-compulsive disorder (OCD)
+- [Obsessive-compulsive disorder (OCD)](/services/ocd/)
 - Depression
-- Attention-Deficit/Hyperactivity Disorder (ADHD)
-- Oppositional Defiant Disorder (ODD) and conduct concerns
-- Life transitions, grief, and adjustment difficulties
-- Parenting consultation and support

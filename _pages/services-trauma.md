@@ -1,9 +1,11 @@
 ---
 layout: page
 title: Trauma & PTSD
+seo_title: "PTSD & Trauma Therapy (CPT, PE) in Madison, WI | Matthew Peverill, PhD"
 permalink: /services/trauma/
 description: Evidence-based trauma therapy and PTSD treatment in Madison, WI.
 nav: false
+service_key: trauma
 hide_description: true
 ---
 
@@ -14,7 +16,7 @@ Following traumatic experiences, people typically show some combination of:
 * **Changes in thinking** — believing different things about other people, the world, or yourself.
 * **Hyperarousal** — feeling easily startled, on-edge, constantly alert, and unable to relax.
 
-Post-traumatic stress disorder (PTSD) is a condition that occurs when these symptoms persist long past the point where they make sense and are useful. 
+These are normal reactions where our body is trying to keep us safe. Post-traumatic stress disorder (PTSD) is a condition that occurs when these symptoms persist too long and no longer serve us well. 
 
 PTSD and trauma-related concerns respond well to treatment. Research on evidence-based trauma therapies is among the strongest in clinical psychology — several approaches produce meaningful, lasting recovery in the majority of people who complete them.
 

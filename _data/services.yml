@@ -1,0 +1,51 @@
+# Structured-data (schema.org) description of each service page.
+# Used by _includes/metadata.html. A page opts in with `service_key: <key>` in its front matter.
+# Not displayed to readers — edit the page markdown for visible text.
+
+trauma:
+  url: /services/trauma/
+  conditions:
+    - name: Post-traumatic stress disorder
+      alternate_name: PTSD
+  therapies:
+    - id: cpt
+      name: Cognitive Processing Therapy
+      alternate_name: CPT
+    - id: pe
+      name: Prolonged Exposure Therapy
+      alternate_name: PE
+
+parenting:
+  url: /services/parenting/
+  conditions:
+    - name: Oppositional defiant disorder
+      alternate_name: ODD
+    - name: Attention-deficit/hyperactivity disorder
+      alternate_name: ADHD
+    - name: Childhood anxiety
+  therapies:
+    - id: pmt
+      name: Parent Management Training
+      alternate_name: Behavioral parent training
+    - id: space
+      name: Supportive Parenting for Anxious Childhood Emotions
+      alternate_name: SPACE
+
+insomnia:
+  url: /services/insomnia/
+  conditions:
+    - name: Insomnia
+  therapies:
+    - id: cbti
+      name: Cognitive Behavioral Therapy for Insomnia
+      alternate_name: CBT-I
+
+ocd:
+  url: /services/ocd/
+  conditions:
+    - name: Obsessive-compulsive disorder
+      alternate_name: OCD
+  therapies:
+    - id: erp
+      name: Exposure and Response Prevention
+      alternate_name: ERP

@@ -1,13 +1,15 @@
 ---
 layout: page
 title: Parenting
+seo_title: "ODD & Child Behavior Therapy in Madison, WI | Matthew Peverill, PhD"
 permalink: /services/parenting/
 description: Evidence-based parent-led treatment for disruptive behavior, ODD, and ADHD in children. Madison, WI.
 nav: false
+service_key: parenting
 hide_description: true
 ---
 
-Parenting a child with disruptive behavior — defiance, aggression, difficulty following rules, tantrums, and outbursts — can be exhausting, consuming, and embarrassing. Parents of children with these concerns are inundated advice with from family, friends, schools, and social media, but may still end up feeling like they're walking on eggshells around their own children. Too often, advice fails because it was intended for average, neurotypical children — **it was not written for your child**. Whether the problem is ultimately rooted in ADHD, autism, anxiety, or an atypical temperament, I can help you design an individualized set of precision parenting techniques that is adapted to **your child's** unique psychology. Evidence-based behavioral approaches are highly effective for these concerns, and research consistently shows that working with parents is often the most powerful lever available.
+Parenting a child with disruptive behavior — defiance, aggression, difficulty following rules, tantrums, and outbursts — can be exhausting, consuming, and embarrassing. Parents of children with these concerns are inundated with advice from family, friends, schools, and social media, but may still end up feeling like they're walking on eggshells around their own children. Too often, advice fails because it was intended for average, neurotypical children — **it was not written for your child**. Whether the problem is ultimately rooted in ADHD, autism, anxiety, or an atypical temperament, I can help you design an individualized set of precision parenting techniques that is adapted to **your child's** unique psychology. Evidence-based behavioral approaches are highly effective for these concerns, and research consistently shows that working with parents is often the most powerful lever available.
 
 ## Who this is for
 

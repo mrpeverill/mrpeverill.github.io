@@ -41,10 +41,11 @@
                   <a class="dropdown-item" href="{{ '/services/trauma/' | relative_url }}">Trauma &amp; PTSD</a>
                   <a class="dropdown-item" href="{{ '/services/parenting/' | relative_url }}">Parenting</a>
                   <a class="dropdown-item" href="{{ '/services/insomnia/' | relative_url }}">CBT for Insomnia</a>
+                  <a class="dropdown-item" href="{{ '/services/ocd/' | relative_url }}">OCD &amp; Exposure Therapy</a>
                 </div>
               </li>
 
-              {% if site.blog_name %}
+              {% if site.blog_name and site.nav_blog %}
               <!-- Blog -->
               <li class="nav-item {% if page.url contains 'blog' %}active{% endif %}">
                 <a class="nav-link" href="{{ '/blog/' | relative_url }}">blog

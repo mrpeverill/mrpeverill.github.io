@@ -1,6 +1,7 @@
 ---
 layout: about
 title: About Me
+seo_title: "Matthew Peverill, PhD | Psychologist & Therapist in Madison, WI"
 permalink: /
 description: Licensed clinical psychologist in Madison, WI offering evidence-based psychotherapy for children, adolescents, and adults.
 
