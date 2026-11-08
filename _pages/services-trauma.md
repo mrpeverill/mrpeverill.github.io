@@ -32,5 +32,5 @@ A focused course of trauma treatment typically spans 12–20 sessions, though pa
 
 ## My background
 
-Before clinical practice, I spent several years as a clinical scientist studying the neuroscience of trauma and adversity — specifically, how early experiences of threat shape the developing brain and confer risk for PTSD and related conditions. I bring that research background to clinical work: the treatments I use are ones I have studied from both inside and outside the therapy room.
+Before clinical practice, I spent several years as a clinical scientist studying the neuroscience of trauma and adversity — specifically, how early experiences of threat shape the developing brain and confer risk for PTSD and related conditions. My clinical training in trauma includes coursework with Dr. Lori Zoellner, a leading researcher on exposure therapy for PTSD, and an internship at a PTSD specialty clinic. I bring both perspectives to my work: I understand trauma as a scientist and treat it as a clinician.
 

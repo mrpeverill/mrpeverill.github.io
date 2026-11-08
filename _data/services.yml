@@ -22,14 +22,10 @@ parenting:
       alternate_name: ODD
     - name: Attention-deficit/hyperactivity disorder
       alternate_name: ADHD
-    - name: Childhood anxiety
   therapies:
     - id: pmt
       name: Parent Management Training
       alternate_name: Behavioral parent training
-    - id: space
-      name: Supportive Parenting for Anxious Childhood Emotions
-      alternate_name: SPACE
 
 insomnia:
   url: /services/insomnia/

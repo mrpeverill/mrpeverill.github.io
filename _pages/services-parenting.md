@@ -26,4 +26,4 @@ Especially for younger children, the most effective approach is often to work pr
 
 ## How it works
 
-Treatment draws on evidence-based strategies, including parent management training and SPACE (Supportive Parenting for Anxious Childhood Emotions), with strong research support. Sessions focus on helping parents understand the principles driving their child's behavior, develop effective and consistent responses, and build a stronger relationship alongside clearer expectations.
+Treatment is grounded in parent management training, an evidence-based approach with strong research support. When anxiety is part of the picture, I also draw on principles from SPACE (Supportive Parenting for Anxious Childhood Emotions), which helps parents respond to anxiety in ways that build their child's confidence rather than avoidance. Sessions focus on helping parents understand the principles driving their child's behavior, develop effective and consistent responses, and build a stronger relationship alongside clearer expectations.

@@ -8,7 +8,7 @@ nav: false
 hide_description: true
 ---
 
-I offer psychotherapy grounded in well-tested, evidence-based principles, applied flexibly to each person's goals and pace. My approach draws on cognitive-behavioral and third-wave behavioral therapies, including ACT and DBT-informed approaches.
+I offer psychotherapy grounded in well-tested, evidence-based principles, applied flexibly to each person's goals and pace. My approach draws on cognitive-behavioral and third-wave behavioral therapies, including DBT skills and ACT-informed approaches.
 
 I specialize in the following areas. Beyond these, I routinely work with clients experiencing anxiety, panic, depression, OCD, ADHD, and other concerns. If you're unsure whether your situation fits, please call — I'm glad to help you find the right fit, even if that's not with me.
 
@@ -16,7 +16,7 @@ I specialize in the following areas. Beyond these, I routinely work with clients
 
 ## [Trauma & PTSD](/services/trauma/)
 
-Evidence-based treatment for post-traumatic stress using approaches with strong research support, including trauma-focused cognitive-behavioral therapy and cognitive processing therapy. I work with children, adolescents, and adults.
+Evidence-based treatment for post-traumatic stress using approaches with strong research support, including cognitive processing therapy (CPT) and prolonged exposure (PE). I work with children, adolescents, and adults.
 
 ---
 
