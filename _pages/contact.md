@@ -45,7 +45,7 @@ I am in network with:
 
 I routinely see clients for:
 
-- [trauma & PTSD](/services/trauma/)
+- [Trauma & PTSD](/services/trauma/)
 - [Oppositional Defiant Disorder (ODD) and conduct concerns in children](/services/parenting/)
 - [Parenting consultation and support](/services/parenting/)
 - [Insomnia](/services/insomnia)
