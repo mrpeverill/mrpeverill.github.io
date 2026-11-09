@@ -9,7 +9,7 @@ last_name: Peverill
 #email: mrpeverill@gmail.com
 description: > # the ">" symbol means to ignore newlines until "footer_text:"
   Licensed clinical psychologist in Madison, WI. Evidence-based therapy for trauma, child behavior, and insomnia, plus broader CBT and third-wave behavioral therapy.
-footer_text:
+footer_text: Psychotherapy in Madison, WI.
 keywords: clinical psychologist, psychotherapy, Madison WI, trauma therapy, PTSD, child behavior therapy, CBT-I, insomnia treatment, cognitive behavioral therapy, ACT, evidence-based therapy
 
 lang: en # the language of your site (for example: en, fr, cn, ru, etc.)
@@ -82,6 +82,7 @@ panelbear_analytics:  # panelbear analytics site ID (format: XXXXXXXXX)
 # -----------------------------------------------------------------------------
 
 blog_name: Matthew Peverill, PhD | Blog
+nav_blog: false # set to true to show the blog in the nav bar
 blog_description: Thoughts on Psychological Science and Practice
 permalink: /blog/:year/:title/
 
@@ -142,6 +143,7 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - vendor
+  - _notes
 keep_files:
   - CNAME
   - .nojekyll

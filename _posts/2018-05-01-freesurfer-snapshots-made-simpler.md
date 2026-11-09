@@ -8,7 +8,7 @@ There a lot of reasons why you would want to programatically collect screenshots
 
 Second, Freesurfer is a great tool for generating figures. You can use tksurfer to project statistical maps from FSL or other programs on a 3d image of the brain surface. Add in some imagemagick scripting and you can very easily create some nifty figures:
 
-<a href="{{ site.url}}/assets/img/2018/04/examplequadfig.png"><img class="alignnone size-full wp-image-21" src="{{ site.url}}/assets/img/2018/04/examplequadfig.png" alt="" width="240" height="206" /></a>
+<a href="{{ "/assets/img/2018/04/examplequadfig.png" | relative_url }}"><img class="alignnone size-full wp-image-21" src="{{ "/assets/img/2018/04/examplequadfig.png" | relative_url }}" alt="" width="240" height="206" /></a>
 
 (image from: Peverill, M., McLaughlin, K. A., Finn, A. S., &amp; Sheridan, M. A. (2016). Working memory filtering continues to develop into late adolescence. <i>Developmental Cognitive Neuroscience</i>. https://doi.org/10.1016/j.dcn.2016.02.004)
 
@@ -54,7 +54,7 @@ mrpev@vmpfc:/mnt/stressdevlab/fear_pipeline/edited_FreeSurfer$eog example.tiff #
 
 If everything goes well, you shouldn't see any windows running but you should still get a screenshot at the end.  If you don't want to enter the tcl commands manually (and why would you?) you can put them in a tcl script and specify the script when you run tksurfer using the -tcl option.
 
-<a href="{{ site.url}}/assets/img/2018/04/capture.png"><img class="alignnone size-medium wp-image-23" src="{{ site.url}}/assets/img/2018/04/capture.png?w=300" alt="" width="300" height="274" /></a>
+<a href="{{ "/assets/img/2018/04/capture.png" | relative_url }}"><img class="alignnone size-medium wp-image-23" src="{{ "/assets/img/2018/04/capture.png" | relative_url }}?w=300" alt="" width="300" height="274" /></a>
 <h1>Parallel generation of QA reports using Freesurfer qa-tools and Xvfb</h1>
 Freesurfer publishes a powerful library, QAtools, to generate QA reports. But this involves, you guessed it, lots of snapshots. So it takes forever if you have a big dataset. We can use xvfb to address this. This is the code that needs to be run for each subject:
 <pre>[sourcecode language="bash"]

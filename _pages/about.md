@@ -1,6 +1,7 @@
 ---
 layout: about
 title: About Me
+seo_title: "Matthew Peverill, PhD | Psychologist & Therapist in Madison, WI"
 permalink: /
 description: Licensed clinical psychologist in Madison, WI offering evidence-based psychotherapy for children, adolescents, and adults.
 
@@ -19,7 +20,8 @@ I am a licensed clinical psychologist in private practice. I provide psychothera
 
 As a therapist, my goal is to give my clients the emotional space and psychological tools needed to reach their goals with wisdom and skill. My therapeutic approach is grounded in well-tested, proven principles of clinical change, applied flexibly within a warm, validating, and genuine relationship. I have seen my clients reach their goals in as little as a few sessions and up to several years of treatment – I strive to set a pace to our work that honors both our relationship and the urgency of your needs.
 
-Beyond my specialty areas, I have broad training in cognitive-behavioral and third-wave behavioral therapies, including ACT and DBT-informed approaches. I routinely see clients for generalized anxiety, phobia, OCD, depression, panic disorder, and other common concerns.
+Beyond my specialty areas, I have broad training in cognitive-behavioral- and third-wave behavioral therapies. I routinely see clients for generalized anxiety, phobia, OCD, depression, panic disorder, and other common concerns.
+
 
 I am experienced in working with clients of all ages. I strongly believe that providing support for parents is one of the best ways we can support children. Especially for young children, I often work primarily or solely with parents. This approach has been shown to be just as or more effective than individual treatment in many cases.
 

@@ -18,7 +18,9 @@
     {%- else -%}
         {%- capture title -%}{{ site.title }}{%- endcapture -%}
     {%- endif -%}
-    {%- if page.title != "blank" and page.url != "/" -%}
+    {%- if page.seo_title -%}
+        {{ page.seo_title }}
+    {%- elsif page.title != "blank" and page.url != "/" -%}
         {{ title }} | {{ page.title }}
     {%- else -%}
         {{ title }}
@@ -35,7 +37,7 @@
     <!-- OpenGraph -->
     <meta property="og:site_name" content="{{ title }}" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="{%- if page.title -%}{{ title }} | {{ page.title }}{%- else -%}{{ title }}{%- endif -%}" />
+    <meta property="og:title" content="{%- if page.seo_title -%}{{ page.seo_title }}{%- elsif page.title -%}{{ title }} | {{ page.title }}{%- else -%}{{ title }}{%- endif -%}" />
     <meta property="og:url" content="{{ page.url | prepend: site.baseurl | prepend: site.url | remove_first: 'index.html' }}" />
     <meta property="og:description" content="{%- if page.description -%}{{ page.description }}{%- else -%}{{ site.description }}{%- endif -%}" />
     {% if page.og_image or site.og_image -%}
@@ -45,7 +47,7 @@
 
     <!-- Twitter card -->
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="{%- if page.title -%}{{ page.title }}{%- else -%}{{ title }}{%- endif -%}" />
+    <meta name="twitter:title" content="{%- if page.seo_title -%}{{ page.seo_title }}{%- elsif page.title -%}{{ page.title }}{%- else -%}{{ title }}{%- endif -%}" />
     <meta name="twitter:description" content="{%- if page.description -%}{{ page.description }}{%- else -%}{{ site.description }}{%- endif -%}" />
     {% if page.og_image or site.og_image -%}
     <meta name="twitter:image" content="{%- if page.og_image -%}{{ page.og_image }}{%- else -%}{{ site.og_image }}{%- endif -%}" />
@@ -129,9 +131,13 @@
         {%- capture link -%}https://stackoverflow.com/users/{{ site.stackoverflow_id }}{%- endcapture -%}
         {%- assign sameaslinks = sameaslinks | push: link -%}
     {%- endif -%}
-    {%- if sameaslinks != blank -%}
-        {%- assign sameaslinks = sameaslinks | split: "" -%}
-    {%- endif -%}
+
+    {%- assign base = site.url -%}
+    {%- capture person_name -%}{{ site.first_name }}{% if site.middle_name %} {{ site.middle_name }}{% endif %} {{ site.last_name }}{%- endcapture -%}
+    {%- assign gbp_url = "https://maps.app.goo.gl/RLi8rDYw8zSBjzeGA" -%}
+    {%- assign person_sameas = sameaslinks | push: "https://brave.psychiatry.wisc.edu/staff/peverill-matthew/" -%}
+    {%- assign svc = nil -%}
+    {%- if page.service_key -%}{%- assign svc = site.data.services[page.service_key] -%}{%- endif %}
 
     <script type="application/ld+json">
     {
@@ -139,40 +145,46 @@
       "@graph": [
         {
           "@type": "Person",
-          "@id": "{{ site.url }}/#person",
-          "name": "{{ site.first_name }}{% if site.middle_name %} {{ site.middle_name }}{% endif %} {{ site.last_name }}",
-          "givenName": "{{ site.first_name }}",
-          "familyName": "{{ site.last_name }}",
+          "@id": "{{ base }}/#person",
+          "name": {{ person_name | jsonify }},
+          "givenName": {{ site.first_name | jsonify }},
+          "familyName": {{ site.last_name | jsonify }},
           "honorificSuffix": "PhD",
           "jobTitle": "Licensed Clinical Psychologist",
-          "description": "{{ site.description | strip_newlines | strip }}",
-          "url": "{{ site.url }}/",
-          "image": "{{ site.og_image }}",
+          "description": {{ site.description | strip_newlines | strip | jsonify }},
+          "url": "{{ base }}/",
+          "image": {{ site.og_image | jsonify }},
+          "telephone": "+1-608-276-9191",
           "alumniOf": [
             { "@type": "CollegeOrUniversity", "name": "University of Washington" },
             { "@type": "CollegeOrUniversity", "name": "University of Wisconsin–Madison" }
-          ]{% if sameaslinks != blank %},
-          "sameAs": {{ sameaslinks }}{% endif %}
+          ],
+          "sameAs": {{ person_sameas | jsonify }}
         },
         {
           "@type": "WebSite",
-          "@id": "{{ site.url }}/#website",
-          "url": "{{ site.url }}/",
-          "name": "{{ site.first_name }}{% if site.middle_name %} {{ site.middle_name }}{% endif %} {{ site.last_name }}",
-          "publisher": { "@id": "{{ site.url }}/#person" },
-          "inLanguage": "{{ site.lang }}"
-        }{% if page.permalink == "/" %},
+          "@id": "{{ base }}/#website",
+          "url": "{{ base }}/",
+          "name": {{ person_name | jsonify }},
+          "publisher": { "@id": "{{ base }}/#person" },
+          "inLanguage": {{ site.lang | jsonify }}
+        },
         {
           "@type": "MedicalBusiness",
-          "@id": "{{ site.url }}/#practice",
+          "@id": "{{ base }}/#practice",
           "name": "Matthew Peverill, PhD — Clinical Psychologist",
-          "url": "{{ site.url }}/",
-          "image": "{{ site.og_image }}",
+          "description": {{ site.description | strip_newlines | strip | jsonify }},
+          "url": "{{ base }}/",
+          "image": {{ site.og_image | jsonify }},
           "telephone": "+1-608-276-9191",
-          "founder": { "@id": "{{ site.url }}/#person" },
-          "provider": { "@id": "{{ site.url }}/#person" },
+          "medicalSpecialty": "Psychiatric",
+          "founder": { "@id": "{{ base }}/#person" },
+          "employee": { "@id": "{{ base }}/#person" },
+          "hasMap": "{{ gbp_url }}",
+          "sameAs": ["{{ gbp_url }}"],
           "address": {
             "@type": "PostalAddress",
+            "@id": "{{ base }}/#address",
             "streetAddress": "700 Rayovac Drive, Suite 220",
             "addressLocality": "Madison",
             "addressRegion": "WI",
@@ -180,23 +192,75 @@
             "addressCountry": "US"
           },
           "areaServed": [
-            { "@type": "City", "name": "Madison" },
+            { "@type": "City", "name": "Madison, WI" },
             { "@type": "State", "name": "Wisconsin" }
           ],
+          "availableService": [
+            {%- for entry in site.data.services -%}
+            {%- assign s = entry[1] -%}
+            {%- for t in s.therapies %}
+            {
+              "@type": "MedicalTherapy",
+              "@id": "{{ base }}{{ s.url }}#{{ t.id }}",
+              "name": {{ t.name | jsonify }}{% if t.alternate_name %},
+              "alternateName": {{ t.alternate_name | jsonify }}{% endif %},
+              "url": "{{ base }}{{ s.url }}"
+            }{% unless forloop.last %},{% endunless %}
+            {%- endfor -%}
+            {%- unless forloop.last %},{% endunless -%}
+            {%- endfor %}
+          ],
           "knowsAbout": [
+            "Psychotherapy",
+            "Cognitive Behavioral Therapy (CBT)",
             "Trauma-focused psychotherapy",
             "Post-Traumatic Stress Disorder (PTSD)",
-            "Child behavior therapy",
-            "Parent-led treatment of disruptive behavior in children",
+            "Cognitive Processing Therapy (CPT)",
+            "Prolonged Exposure Therapy (PE)",
+            "Exposure therapy",
+            "Exposure and Response Prevention (ERP)",
+            "Obsessive-Compulsive Disorder (OCD)",
+            "Parent Management Training",
+            "Parent-based treatment of childhood anxiety",
             "Oppositional Defiant Disorder (ODD)",
             "Attention-Deficit/Hyperactivity Disorder (ADHD)",
             "Cognitive Behavioral Therapy for Insomnia (CBT-I)",
-            "Cognitive Behavioral Therapy",
-            "Acceptance and Commitment Therapy (ACT)",
-            "Dialectical Behavior Therapy (DBT)",
+            "Insomnia",
+            "ACT-informed therapy",
+            "Dialectical Behavior Therapy (DBT) skills",
             "Anxiety disorders",
             "Panic disorder",
-            "Depression"
+            "Depression",
+            "Telehealth"
+          ]
+        }{% if svc %},
+        {
+          "@type": "MedicalWebPage",
+          "@id": "{{ base }}{{ svc.url }}#webpage",
+          "url": "{{ base }}{{ svc.url }}",
+          "name": {{ page.seo_title | default: page.title | jsonify }},
+          "description": {{ page.description | jsonify }},
+          "isPartOf": { "@id": "{{ base }}/#website" },
+          "author": { "@id": "{{ base }}/#person" },
+          "reviewedBy": { "@id": "{{ base }}/#person" },
+          "about": [
+            {%- for c in svc.conditions %}
+            {
+              "@type": "MedicalCondition",
+              "name": {{ c.name | jsonify }}{% if c.alternate_name %},
+              "alternateName": {{ c.alternate_name | jsonify }}{% endif %},
+              "possibleTreatment": [
+                {%- for t in svc.therapies -%}
+                { "@id": "{{ base }}{{ svc.url }}#{{ t.id }}" }{% unless forloop.last %}, {% endunless %}
+                {%- endfor -%}
+              ]
+            }{% unless forloop.last %},{% endunless %}
+            {%- endfor %}
+          ],
+          "mainEntity": [
+            {%- for t in svc.therapies -%}
+            { "@id": "{{ base }}{{ svc.url }}#{{ t.id }}" }{% unless forloop.last %}, {% endunless %}
+            {%- endfor -%}
           ]
         }{% endif %}
       ]
