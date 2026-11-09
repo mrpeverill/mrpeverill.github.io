@@ -155,7 +155,6 @@
           "url": "{{ base }}/",
           "image": {{ site.og_image | jsonify }},
           "telephone": "+1-608-276-9191",
-          "worksFor": { "@id": "https://ftcm.org/#organization" },
           "alumniOf": [
             { "@type": "CollegeOrUniversity", "name": "University of Washington" },
             { "@type": "CollegeOrUniversity", "name": "University of Wisconsin–Madison" }
@@ -171,14 +170,6 @@
           "inLanguage": {{ site.lang | jsonify }}
         },
         {
-          "@type": "MedicalOrganization",
-          "@id": "https://ftcm.org/#organization",
-          "name": "Family Therapy Center of Madison",
-          "url": "https://ftcm.org/",
-          "telephone": "+1-608-276-9191",
-          "address": { "@id": "{{ base }}/#address" }
-        },
-        {
           "@type": "MedicalBusiness",
           "@id": "{{ base }}/#practice",
           "name": "Matthew Peverill, PhD — Clinical Psychologist",
@@ -189,7 +180,6 @@
           "medicalSpecialty": "Psychiatric",
           "founder": { "@id": "{{ base }}/#person" },
           "employee": { "@id": "{{ base }}/#person" },
-          "parentOrganization": { "@id": "https://ftcm.org/#organization" },
           "hasMap": "{{ gbp_url }}",
           "sameAs": ["{{ gbp_url }}"],
           "address": {
