@@ -14,7 +14,7 @@ If you are used to working with FSL, you are probably using 4d .nii files. Fortu
 
 Instead, what you need to do is change the window that reads '1' under the filter box in the file selection window to 1:999, like so:
 
-<a href="{{ site.url}}/assets/img/2015/10/spm-multi-volume-select.png"><img class="alignnone size-medium wp-image-3" src="{{ site.url}}/assets/img/2015/10/spm-multi-volume-select.png?w=300" alt="SPM Multi-Volume Select" width="300" height="91" /></a>
+<a href="{{ "/assets/img/2015/10/spm-multi-volume-select.png" | relative_url }}"><img class="alignnone size-medium wp-image-3" src="{{ "/assets/img/2015/10/spm-multi-volume-select.png" | relative_url }}?w=300" alt="SPM Multi-Volume Select" width="300" height="91" /></a>
 
 You will see all the volumes appear in the list. Select them all and press 'Done'. Now you are ready to go!
 
